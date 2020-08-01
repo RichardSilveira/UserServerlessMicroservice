@@ -23,6 +23,20 @@ service: userservice
 provider:
   name: aws
   runtime: dotnetcore3.1
+  region: us-east-1
+  memorySize: 512
+  timeout: 120
+  apiKeys:
+    - companyUsagePlan:
+      - company-shared-key # this key can be used for a Custom Authorizer
+  usagePlan:
+    - companyUsagePlan:
+        throttle:
+          burstLimit: 100
+          rateLimit: 200
+        quota:
+          limit: 200_000
+          period: MONTH
 
 # you can overwrite defaults here
 #  stage: dev
@@ -52,8 +66,12 @@ package:
   artifact: bin/Release/netcoreapp3.1/userService.zip
 
 functions:
-  helloWorld:
-    handler: CsharpHandlers::AwsDotnetCsharp.HelloWorld::Handle
+  addNewUser:
+    handler: CsharpHandlers::AwsDotnetCsharp.AddNewUserHandler::Handle
+    events:
+      - http:
+          path: users
+          method: post
 
     # you can add packaging information here
 #    package:

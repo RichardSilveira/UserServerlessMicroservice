@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Net;
@@ -14,18 +15,15 @@ using Amazon.Lambda.Serialization.SystemTextJson;
 
 namespace AwsDotnetCsharp
 {
-    public class HelloWorld
+    public class AddNewUserHandler
     {
         [LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
             ILambdaContext context)
         {
-            var queryStringParams = request.QueryStringParameters.ToImmutableList();
-
-
-            var result = await Task.FromResult(queryStringParams);
-            var user = new User();
-            user.Name = "Richard";
+            await Task.CompletedTask;
+            
+            var user = new User("Richard");
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {
@@ -39,7 +37,12 @@ namespace AwsDotnetCsharp
 
         private class User
         {
-            public string Name { get; set; }
+            public User(string firstName)
+            {
+                FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
+            }
+
+            public string FirstName { get; private set; }
         }
     }
 }
