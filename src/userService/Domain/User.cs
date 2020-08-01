@@ -1,4 +1,6 @@
-﻿namespace UserService.Domain
+﻿using System;
+
+namespace UserService.Domain
 {
     public class User
     {
@@ -7,8 +9,12 @@
         public string LastName { get; private set; }
         public CivilAddress Address { get; private set; } //todo: may have a collection of addresses
 
-        public User()
+        public User(string firstName, string lastName)
         {
+            FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
+            LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+
+            //todo: handle with domain events after commiting to the database later (syncronous with mediatR?)
         }
     }
 }

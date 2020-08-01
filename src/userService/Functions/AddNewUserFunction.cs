@@ -5,22 +5,25 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using UserService.Domain;
 
 // If targeting .NET Core 3.1 this serializer is highly recommend over Amazon.Lambda.Serialization.Json and can significantly reduce cold start performance in Lambda.
 [assembly:
     Amazon.Lambda.Core.LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
-namespace UserService.Handlers
+namespace UserService.Functions
 {
-    public class AddNewUserHandler
+    public class AddNewUserFunction
     {
-        
+        //TODO: DI can happen here (scoped - cold start issue)
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
             ILambdaContext context)
         {
             await Task.CompletedTask;
 
-            var user = new User("Richard");
+            var userRequest = JsonSerializer.Deserialize<UserRequest>(request.Body);
+
+            var user = new User(userRequest.FirstName, userRequest.LastName);
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {
@@ -30,16 +33,6 @@ namespace UserService.Handlers
             };
 
             return response;
-        }
-
-        private class User
-        {
-            public User(string firstName)
-            {
-                FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-            }
-
-            public string FirstName { get; private set; }
         }
     }
 }

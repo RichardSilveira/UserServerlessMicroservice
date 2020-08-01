@@ -25,7 +25,7 @@ provider:
   runtime: dotnetcore3.1
   region: us-east-1
   memorySize: 512
-  timeout: 120
+  timeout: 30
   apiKeys:
     - companyUsagePlan:
       - company-shared-key # this key can be used for a Custom Authorizer
@@ -67,7 +67,7 @@ package:
 
 functions:
   addNewUser:
-    handler: CsharpHandlers::UserService.Handlers.AddNewUserHandler::Handle
+    handler: UserService::UserService.Functions.AddNewUserFunction::Handle
     events:
       - http:
           path: v1/users
