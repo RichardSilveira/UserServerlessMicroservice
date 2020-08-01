@@ -67,10 +67,10 @@ package:
 
 functions:
   addNewUser:
-    handler: CsharpHandlers::AwsDotnetCsharp.AddNewUserHandler::Handle
+    handler: CsharpHandlers::UserService.Handlers.AddNewUserHandler::Handle
     events:
       - http:
-          path: users
+          path: v1/users
           method: post
 
     # you can add packaging information here
