@@ -27,10 +27,16 @@ namespace UserService.Functions
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {
-                StatusCode = (int) HttpStatusCode.OK,
+                StatusCode = (int) HttpStatusCode.Created,
                 Body = JsonSerializer.Serialize(user),
                 Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}
             };
+            //todo: Add location Header
+
+            LambdaLogger.Log(
+                "ENVIRONMENT VARIABLES: " + JsonSerializer.Serialize(Environment.GetEnvironmentVariables()));
+            LambdaLogger.Log("CONTEXT: " + JsonSerializer.Serialize(context.GetMainProperties()));
+            LambdaLogger.Log("EVENT: " + JsonSerializer.Serialize(request.GetMainProperties()));
 
             return response;
         }
