@@ -23,6 +23,7 @@ service: userservice
 provider:
   name: aws
   runtime: dotnetcore3.1
+  stage: dev
   region: us-east-1
   memorySize: 512
   timeout: 30
@@ -37,7 +38,8 @@ provider:
         quota:
           limit: 200_000
           period: MONTH
-
+  environment:
+      stage: value1
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
