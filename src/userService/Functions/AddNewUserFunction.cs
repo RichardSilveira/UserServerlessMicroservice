@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Configuration;
 using UserService.Domain;
+using static System.Text.Json.JsonSerializer;
 
 // If targeting .NET Core 3.1 this serializer is highly recommend over Amazon.Lambda.Serialization.Json and can significantly reduce cold start performance in Lambda.
 [assembly:
@@ -59,20 +60,20 @@ namespace UserService.Functions
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
             ILambdaContext context)
         {
-            await Task.CompletedTask;
+            LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
+            LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
+
+            await Task.CompletedTask; //todo: I'll replace it
 
             var userRetrieved = _userRepository.GetUser();
-            LambdaLogger.Log("userRetrieved: " + JsonSerializer.Serialize(userRetrieved));
+            LambdaLogger.Log("userRetrieved: " + Serialize(userRetrieved));
 
             var isValid = _userDomainService.DoSomeLogicInvolvingUser();
             LambdaLogger.Log("isValid: " + isValid);
 
-            var env2Value = Configuration["env2"];
-            var env3Value = Configuration["env3"];
-            var env4Value = Configuration["env4"];
-            LambdaLogger.Log("env2: " + env2Value);
-            LambdaLogger.Log("env3: " + env3Value);
-            LambdaLogger.Log("env4: " + env4Value);
+            var env1Value = Configuration["envVar1"];
+            var env2Value = Configuration["envVar2"];
+            LambdaLogger.Log($"envVar1: {env1Value}, envVar2: {env2Value}");
 
             var userRequest = JsonSerializer.Deserialize<UserRequest>(request.Body);
 
@@ -81,14 +82,10 @@ namespace UserService.Functions
             var response = new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = (int) HttpStatusCode.Created,
-                Body = JsonSerializer.Serialize(user),
+                Body = Serialize(user),
                 Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}
             };
             //todo: Add location Header
-
-            //todo: Template Method and do these logs asynchronously
-            LambdaLogger.Log("CONTEXT: " + JsonSerializer.Serialize(context.GetMainProperties()));
-            LambdaLogger.Log("EVENT: " + JsonSerializer.Serialize(request.GetMainProperties()));
 
             return response;
         }
