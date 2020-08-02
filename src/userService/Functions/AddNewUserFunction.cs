@@ -15,23 +15,12 @@ using UserService.Domain;
 
 namespace UserService.Functions
 {
-    public class AddNewUserFunction
+    public class AddNewUserFunction : FunctionBase
     {
-        public IConfigurationService ConfigService { get; }
-
-        private void ConfigureServices(IServiceCollection serviceCollection)
+        protected override void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IEnvironmentService, EnvironmentService>();
             serviceCollection.AddTransient<IConfigurationService, ConfigurationService>();
-        }
-
-        public AddNewUserFunction()
-        {
-            var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            ConfigService = serviceProvider.GetService<IConfigurationService>();
         }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
@@ -41,8 +30,10 @@ namespace UserService.Functions
 
             var env2Value = ConfigService.GetConfiguration()["env2"];
             var env3Value = ConfigService.GetConfiguration()["env3"];
+            var env4Value = ConfigService.GetConfiguration()["env4"];
             LambdaLogger.Log("env2: " + env2Value);
             LambdaLogger.Log("env3: " + env3Value);
+            LambdaLogger.Log("env4: " + env4Value);
 
             var userRequest = JsonSerializer.Deserialize<UserRequest>(request.Body);
 

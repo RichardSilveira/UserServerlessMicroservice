@@ -39,7 +39,7 @@ provider:
           limit: 200_000
           period: MONTH
   environment:
-      stage: value1
+      STAGE: dev
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1

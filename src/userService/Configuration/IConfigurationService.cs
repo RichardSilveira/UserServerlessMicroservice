@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace UserService.Configuration
+namespace UserService
 {
     public interface IConfigurationService
     {
