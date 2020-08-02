@@ -70,6 +70,8 @@ package:
 functions:
   addNewUser:
     handler: UserService::UserService.Functions.AddNewUserFunction::Handle
+    # provisionedConcurrency: 3 # optional, Count of provisioned lambda instances
+    # reservedConcurrency: 5 # optional, reserved concurrency limit for this function. By default, AWS uses account concurrency limit
     events:
       - http:
           path: v1/users

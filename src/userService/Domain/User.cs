@@ -1,4 +1,5 @@
 ﻿using System;
+using UserService.Functions;
 
 namespace UserService.Domain
 {
