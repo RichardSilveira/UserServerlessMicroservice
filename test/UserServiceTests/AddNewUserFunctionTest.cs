@@ -22,10 +22,15 @@ namespace UserServiceTests
 
         public AddNewUserFunctionTest()
         {
+            // Should mock the Stage variable that is created by serverless framework
+            var stage = "test";
+            var mockConfig = new Mock<IEnvironmentService>();
+            mockConfig.Setup(p => p.EnvironmentName).Returns(stage);
+
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.test.json", optional: true)
+                .AddJsonFile($"appsettings.{mockConfig.Object.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
         }
@@ -34,11 +39,6 @@ namespace UserServiceTests
         [Fact]
         public async Task AddNewValidUser_Should_Returns_201_StatusCode()
         {
-            // Should mock the Stage variable that is created by serverless framework
-            var stage = "dev";
-            var mockConfig = new Mock<IEnvironmentService>();
-            mockConfig.Setup(p => p.EnvironmentName).Returns(stage);
-
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
             var user = new User("Foo", "Bar");
