@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace UserService.SharedKernel
 {
+    // Credits: https://docs.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/implement-value-objects
     public abstract class ValueObject
     {
         protected static bool EqualOperator(ValueObject left, ValueObject right)

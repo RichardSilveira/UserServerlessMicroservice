@@ -29,7 +29,7 @@ provider:
   timeout: 30
   apiKeys:
     - companyUsagePlan:
-      - company-shared-key # this key can be used for a Custom Authorizer
+        - company-shared-key # this key can be used for a Custom Authorizer
   usagePlan:
     - companyUsagePlan:
         throttle:
@@ -39,7 +39,7 @@ provider:
           limit: 200_000
           period: MONTH
   environment:
-      STAGE: dev
+    STAGE: dev
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
@@ -70,16 +70,15 @@ package:
 functions:
   addNewUser:
     handler: UserService::UserService.Functions.AddNewUserFunction::Handle
-    # provisionedConcurrency: 3 # optional, Count of provisioned lambda instances
-    # reservedConcurrency: 5 # optional, reserved concurrency limit for this function. By default, AWS uses account concurrency limit
+    provisionedConcurrency: 2 # optional, Count of provisioned lambda instances
     events:
       - http:
           path: v1/users
           method: post
 
     # you can add packaging information here
-#    package:
-#      artifact: bin/Release/netcoreapp3.1/userService.zip
+    #    package:
+    #      artifact: bin/Release/netcoreapp3.1/userService.zip
     #  exclude:
     #    - exclude-me.js
     #    - exclude-me-dir/**
