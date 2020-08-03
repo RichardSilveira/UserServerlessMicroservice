@@ -61,7 +61,7 @@ namespace UserServiceTests
         {
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
-            var user = new User("Foo", "Bar");
+            var user = new User("John", "Doe");
             proxy.Body = JsonSerializer.Serialize(user);
 
             var optionsBuilder = new DbContextOptionsBuilder<UserServiceDbContext>();

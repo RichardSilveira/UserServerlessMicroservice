@@ -70,7 +70,7 @@ package:
 functions:
   addNewUser:
     handler: UserService::UserService.Functions.AddNewUserFunction::Handle
-    provisionedConcurrency: 2 # optional, Count of provisioned lambda instances
+    # provisionedConcurrency: 2 # optional, Count of provisioned lambda instances
     events:
       - http:
           path: v1/users

@@ -8,14 +8,13 @@ using UserService.SharedKernel;
 
 namespace UserService.Infrastructure.Repositories
 {
-    public class RepositoryBase<TEntity, TId> : IRepository<TEntity, TId>
+    public class EntityFrameworkCrudMethods<TEntity, TId>
         where TEntity : Entity
         where TId : struct
     {
-        //todo: Flavor composition over inheritance here (SOLID - SL)
         private readonly DbContext _context;
 
-        public RepositoryBase(DbContext context) => _context = context;
+        public EntityFrameworkCrudMethods(DbContext context) => _context = context;
 
         public void Add(TEntity entity)
         {

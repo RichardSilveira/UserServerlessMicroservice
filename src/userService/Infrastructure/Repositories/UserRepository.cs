@@ -9,42 +9,40 @@ using UserService.Functions;
 
 namespace UserService.Infrastructure.Repositories
 {
-    public class UserRepository : RepositoryBase<User, Guid>, IUserRepository
+    public class UserRepository : IUserRepository
     {
-        //todo: Flavor composition over inheritance here (SOLID - SL)
         private readonly DbContext _context;
+        private readonly EntityFrameworkCrudMethods<User, Guid> _crudMethods;
 
-
-        public UserRepository(DbContext context) : base(context) => _context = context;
+        public UserRepository(DbContext context)
+        {
+            _context = context;
+            _crudMethods = new EntityFrameworkCrudMethods<User, Guid>(_context);
+        }
 
         public void Add(User entity)
         {
-            base.Add(entity);
+            _crudMethods.Add(entity);
         }
 
         public void Update(User entity)
         {
-            throw new NotImplementedException();
+            _crudMethods.Update(entity);
         }
 
-        public void Delete(Guid Id)
+        public async Task Delete(Guid Id)
         {
-            throw new NotImplementedException();
+            await _crudMethods.Delete(Id);
         }
 
         public async Task<User> GetById(Guid Id)
         {
-            return await base.GetById(Id);
+            return await _crudMethods.GetById(Id);
         }
 
-        public Task<IEnumerable<User>> GetAll()
+        public async Task<IEnumerable<User>> GetAll()
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<User>> Get(Expression<Predicate<User>> @where)
-        {
-            throw new NotImplementedException();
+            return await _crudMethods.GetAll();
         }
     }
 }
