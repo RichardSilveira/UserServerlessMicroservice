@@ -89,12 +89,18 @@ namespace UserService.Functions
             var env2Value = Configuration["envVar2"];
             LambdaLogger.Log($"envVar1: {env1Value}, envVar2: {env2Value}");
 
-            var userRequest = JsonSerializer.Deserialize<UserRequest>(request.Body);
+            var userRequest = JsonSerializer.Deserialize<AddUserRequest>(request.Body);
+
+            var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
+                userRequest.State);
 
             var user = new User(userRequest.FirstName, userRequest.LastName);
+            user.SetAddress(address);
 
             _userRepository.Add(user);
             _unitOfWork.SaveChanges();
+
+            var testeUser = await _userRepository.GetById(user.Id);
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {

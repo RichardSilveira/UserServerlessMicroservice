@@ -1,7 +1,4 @@
-﻿using System;
-using UserService.Functions;
-
-namespace UserService.Domain
+﻿namespace UserService.Domain
 {
     public class SomeUserDomainService
     {

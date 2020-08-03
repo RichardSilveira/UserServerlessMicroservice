@@ -26,7 +26,7 @@ namespace UserServiceTests
         public AddNewUserFunctionTest()
         {
             // Should mock the Stage variable that is created by serverless framework
-            var stage = "prod";
+            var stage = "test";
             var mockConfig = new Mock<IEnvironmentService>();
             mockConfig.Setup(p => p.EnvironmentName).Returns(stage);
 
@@ -44,13 +44,23 @@ namespace UserServiceTests
         {
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
-            var user = new User("Foo", "Bar");
-            proxy.Body = JsonSerializer.Serialize(user);
+            var addUserRequest = new AddUserRequest()
+            {
+                FirstName = "Julia",
+                LastName = "Doe",
+                Country = "Brazil",
+                Street = "Flower St."
+            };
 
-            var userRepository = new UserRepositoryInMemory();
+            proxy.Body = JsonSerializer.Serialize(addUserRequest);
+
             var unitOfWork = new UnitOfWorkInMemory();
-            var userDomainService = new SomeUserDomainService(userRepository);
-            var function = new AddNewUserFunction(_configuration, unitOfWork, userRepository, userDomainService);
+            var userRepository = new UserRepositoryInMemory();
+
+            var function =
+                new AddNewUserFunction(_configuration, unitOfWork, userRepository,
+                    new SomeUserDomainService(userRepository));
+
             var result = await function.Handle(proxy, new TestLambdaContext());
 
             Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
@@ -61,8 +71,15 @@ namespace UserServiceTests
         {
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
-            var user = new User("John", "Doe");
-            proxy.Body = JsonSerializer.Serialize(user);
+            var addUserRequest = new AddUserRequest()
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                Country = "Argentina",
+                State = "Buenos Aires"
+            };
+
+            proxy.Body = JsonSerializer.Serialize(addUserRequest);
 
             var optionsBuilder = new DbContextOptionsBuilder<UserServiceDbContext>();
             optionsBuilder.UseMySql(

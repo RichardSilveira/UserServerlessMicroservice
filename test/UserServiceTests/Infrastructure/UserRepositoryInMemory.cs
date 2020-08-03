@@ -9,21 +9,14 @@ namespace UserServiceTests.Infrastructure
 {
     public class UserRepositoryInMemory : IUserRepository
     {
-        public void AddUser(User user)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public User GetUser() => new User("Lorem", "Ipsum");
-
         public void Add(User entity)
         {
-            throw new NotImplementedException();
+            //TODO: Implemen it later
         }
 
         public void Update(User entity)
         {
-            throw new NotImplementedException();
+            //TODO: Implemen it later
         }
 
         public Task Delete(Guid Id)
@@ -37,11 +30,6 @@ namespace UserServiceTests.Infrastructure
         }
 
         public Task<IEnumerable<User>> GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<User>> Get(Expression<Func<User, bool>> @where)
         {
             throw new NotImplementedException();
         }
