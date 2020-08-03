@@ -8,13 +8,8 @@ namespace UserService.Infrastructure.Repositories
     {
         public DbSet<User> User { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public UserServiceDbContext(DbContextOptions options) : base(options)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseMySql(
-                    "Server=localhost;Database=testedb;Uid=root;Pwd=MySql2019!;"); //TODO: Change connection string to local docker db
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -22,8 +17,6 @@ namespace UserService.Infrastructure.Repositories
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfiguration(new UserMap());
-
-            //base.OnModelCreating(modelBuilder);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Configuration;
@@ -41,7 +42,6 @@ namespace UserService.Functions
             IUserRepository userRepository,
             SomeUserDomainService userDomainService) : base(configuration)
         {
-            
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _userDomainService = userDomainService;
@@ -54,7 +54,13 @@ namespace UserService.Functions
             serviceCollection.AddTransient<IConfigurationService, ConfigurationService>();
 
             // Other injections goes here
-            serviceCollection.AddScoped<UserServiceDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<UserServiceDbContext>();
+            optionsBuilder.UseMySql(
+                Configuration["ConnectionStrings:UserServiceDbContext"]);
+
+            serviceCollection.AddScoped<UserServiceDbContext>((provider =>
+                new UserServiceDbContext(optionsBuilder.Options)));
+
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
 
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
@@ -63,8 +69,6 @@ namespace UserService.Functions
 
         protected override void Configure(IServiceProvider serviceProvider)
         {
-            base.Configure(serviceProvider);
-
             var userServiceContext = serviceProvider.GetService<UserServiceDbContext>();
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();

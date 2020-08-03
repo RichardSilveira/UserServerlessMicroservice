@@ -12,9 +12,11 @@ namespace UserService.Functions
         public FunctionBase()
         {
             var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-
             var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            Configuration = serviceProvider.GetService<IConfigurationService>().GetConfiguration();
+
+            ConfigureServices(serviceCollection);
             Configure(serviceProvider);
         }
 
@@ -22,9 +24,6 @@ namespace UserService.Functions
 
         protected abstract void ConfigureServices(IServiceCollection serviceCollection);
 
-        protected virtual void Configure(IServiceProvider serviceProvider)
-        {
-            Configuration = serviceProvider.GetService<IConfigurationService>().GetConfiguration();
-        }
+        protected abstract void Configure(IServiceProvider serviceProvider);
     }
 }

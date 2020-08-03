@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using UserService;
@@ -63,7 +64,11 @@ namespace UserServiceTests
             var user = new User("Foo", "Bar");
             proxy.Body = JsonSerializer.Serialize(user);
 
-            var localMySqlDbCtxt = new UserServiceDbContext();
+            var optionsBuilder = new DbContextOptionsBuilder<UserServiceDbContext>();
+            optionsBuilder.UseMySql(
+                _configuration["ConnectionStrings:UserServiceDbContext"]);
+
+            var localMySqlDbCtxt = new UserServiceDbContext(optionsBuilder.Options);
 
             var userRepository = new UserRepository(localMySqlDbCtxt);
             var unitOfWork = new UnitOfWork(localMySqlDbCtxt);
