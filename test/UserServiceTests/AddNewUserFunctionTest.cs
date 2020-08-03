@@ -26,7 +26,7 @@ namespace UserServiceTests
         public AddNewUserFunctionTest()
         {
             // Should mock the Stage variable that is created by serverless framework
-            var stage = "test";
+            var stage = "prod";
             var mockConfig = new Mock<IEnvironmentService>();
             mockConfig.Setup(p => p.EnvironmentName).Returns(stage);
 

@@ -15,6 +15,7 @@ namespace UserServiceTests.Infrastructure
         }
 
         public User GetUser() => new User("Lorem", "Ipsum");
+
         public void Add(User entity)
         {
             throw new NotImplementedException();

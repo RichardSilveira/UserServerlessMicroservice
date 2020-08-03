@@ -81,8 +81,6 @@ namespace UserService.Functions
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
 
-            var userRetrieved = await _userRepository.GetById(Guid.Empty);
-            LambdaLogger.Log("userRetrieved: " + Serialize(userRetrieved));
 
             var isValid = _userDomainService.DoSomeLogicInvolvingUser();
             LambdaLogger.Log("isValid: " + isValid);
@@ -97,15 +95,18 @@ namespace UserService.Functions
 
             _userRepository.Add(user);
             _unitOfWork.SaveChanges();
-            //todo: dispose connection
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {
                 StatusCode = (int) HttpStatusCode.Created,
                 Body = Serialize(user),
-                Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"},
+                    {"Location", $"https://e8teskfbxf.execute-api.us-east-1.amazonaws.com/dev/v1/users/{user.Id}"}
+                }
             };
-            //todo: Add location Header
+            // Location Header should be set after you've a dns name
 
             return response;
         }

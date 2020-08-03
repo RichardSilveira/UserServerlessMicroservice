@@ -29,6 +29,7 @@
       <None Update="appsettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Remove="appsettings.prod.json" />
     </ItemGroup>
 
 </Project>
