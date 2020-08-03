@@ -6,12 +6,12 @@ namespace UserService
 {
     public class ConfigurationService : IConfigurationService
     {
-        public IEnvironmentService EnvService { get; }
+        private readonly IEnvironmentService _environmentService;
         private readonly IConfiguration _configuration;
 
-        public ConfigurationService(IEnvironmentService envService)
+        public ConfigurationService()
         {
-            EnvService = envService;
+            _environmentService = new EnvironmentService();
             _configuration = BuildConfiguration();
         }
 
@@ -20,7 +20,7 @@ namespace UserService
         private IConfiguration BuildConfiguration() => new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{EnvService.EnvironmentName}.json", optional: true)
+            .AddJsonFile($"appsettings.{_environmentService.EnvironmentName}.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
     }

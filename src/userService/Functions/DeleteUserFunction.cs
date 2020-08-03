@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
@@ -14,13 +14,9 @@ using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Repositories.Transactions;
 using static System.Text.Json.JsonSerializer;
 
-// If targeting .NET Core 3.1 this serializer is highly recommend over Amazon.Lambda.Serialization.Json and can significantly reduce cold start performance in Lambda.
-[assembly:
-    Amazon.Lambda.Core.LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
-
 namespace UserService.Functions
 {
-    public class AddNewUserFunction
+    public class DeleteUserFunction
     {
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
@@ -30,7 +26,7 @@ namespace UserService.Functions
 
 
         // Invoked by AWS Lambda at runtime
-        public AddNewUserFunction()
+        public DeleteUserFunction()
         {
             _configuration = new ConfigurationService().GetConfiguration();
 
@@ -46,7 +42,7 @@ namespace UserService.Functions
         /* You need pass all your abstractions here to have them injected for tests.
          This way neither the ConfigureServices nor the Configure won't be called.
          */
-        public AddNewUserFunction(
+        public DeleteUserFunction(
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
             IUserRepository userRepository,
@@ -65,43 +61,32 @@ namespace UserService.Functions
 
             serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
-            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
-            serviceCollection.AddScoped<IUserRepository, UserRepository>();
+            serviceCollection.AddTransient<IUnitOfWork, UnitOfWork>();
+            serviceCollection.AddTransient<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
-        public APIGatewayHttpApiV2ProxyResponse Handle(APIGatewayHttpApiV2ProxyRequest request,
+        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
             ILambdaContext context)
         {
+            //todo: bad request
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
 
-            var userRequest = JsonSerializer.Deserialize<AddUserRequest>(request.Body);
+            var userId = Guid.Parse(request.PathParameters["userid"]);
 
-            var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
-                userRequest.State);
+            // Could apply some logic here to approve the user deletion
 
-            var user = new User(userRequest.FirstName, userRequest.LastName);
-            user.UpdateAddressInfo(address);
-
-            _userRepository.Add(user);
+            await _userRepository.Delete(userId);
             _unitOfWork.SaveChanges();
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {
-                StatusCode = (int) HttpStatusCode.Created,
-                Body = Serialize(user),
-                Headers = new Dictionary<string, string>
-                {
-                    {"Content-Type", "application/json"},
-                    {"Location", $"https://e8teskfbxf.execute-api.us-east-1.amazonaws.com/dev/v1/users/{user.Id}"}
-                }
+                StatusCode = (int) HttpStatusCode.NoContent,
+                Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}
             };
-            // Location Header should be set after you've a dns name
 
             return response;
         }
-
-        //TODO: Handling bad request responses
     }
 }

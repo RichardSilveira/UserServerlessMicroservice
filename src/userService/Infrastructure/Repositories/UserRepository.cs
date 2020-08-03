@@ -11,10 +11,10 @@ namespace UserService.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly DbContext _context;
+        private readonly UserServiceDbContext _context;
         private readonly EntityFrameworkCrudMethods<User, Guid> _crudMethods;
 
-        public UserRepository(DbContext context)
+        public UserRepository(UserServiceDbContext context)
         {
             _context = context;
             _crudMethods = new EntityFrameworkCrudMethods<User, Guid>(_context);

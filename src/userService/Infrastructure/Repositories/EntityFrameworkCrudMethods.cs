@@ -25,7 +25,7 @@ namespace UserService.Infrastructure.Repositories
         {
             // Be careful about the differences between Update, Attach, and Setting EntityState.
             // https://www.learnentityframeworkcore.com/dbcontext/modifying-data
-            _context.Update(entity);
+            _context.Entry(entity).State = EntityState.Modified;
         }
 
         public async Task Delete(TId Id)

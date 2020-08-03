@@ -40,7 +40,7 @@ namespace UserServiceTests
 
 
         [Fact]
-        public async Task AddNewValidUser_Should_Returns_201_StatusCode()
+        public void AddNewValidUser_Should_Returns_201_StatusCode()
         {
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
@@ -61,13 +61,13 @@ namespace UserServiceTests
                 new AddNewUserFunction(_configuration, unitOfWork, userRepository,
                     new SomeUserDomainService(userRepository));
 
-            var result = await function.Handle(proxy, new TestLambdaContext());
+            var result = function.Handle(proxy, new TestLambdaContext());
 
             Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
         }
 
         [Fact]
-        public async Task AddNewUser_Via_LocalMySql()
+        public void AddNewUser_Via_LocalMySql()
         {
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
@@ -83,7 +83,7 @@ namespace UserServiceTests
 
             var optionsBuilder = new DbContextOptionsBuilder<UserServiceDbContext>();
             optionsBuilder.UseMySql(
-                _configuration["ConnectionStrings:UserServiceDbContext"]);
+                _configuration["UserServiceDbContextConnectionString"]);
 
             var localMySqlDbCtxt = new UserServiceDbContext(optionsBuilder.Options);
 
@@ -91,7 +91,7 @@ namespace UserServiceTests
             var unitOfWork = new UnitOfWork(localMySqlDbCtxt);
             var userDomainService = new SomeUserDomainService(userRepository);
             var function = new AddNewUserFunction(_configuration, unitOfWork, userRepository, userDomainService);
-            var result = await function.Handle(proxy, new TestLambdaContext());
+            var result = function.Handle(proxy, new TestLambdaContext());
 
             Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
         }

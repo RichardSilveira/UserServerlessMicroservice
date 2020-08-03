@@ -16,17 +16,14 @@ using static System.Text.Json.JsonSerializer;
 
 namespace UserService.Functions
 {
-    public class UpdateUserFunction
+    public class GetUserByIdFunction
     {
         private readonly IConfiguration _configuration;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
-
-        private SomeUserDomainService _userDomainService;
 
 
         // Invoked by AWS Lambda at runtime
-        public UpdateUserFunction()
+        public GetUserByIdFunction()
         {
             _configuration = new ConfigurationService().GetConfiguration();
 
@@ -34,24 +31,18 @@ namespace UserService.Functions
             ConfigureServices(serviceCollection);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
-            _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
         }
 
         /* You need pass all your abstractions here to have them injected for tests.
          This way neither the ConfigureServices nor the Configure won't be called.
          */
-        public UpdateUserFunction(
+        public GetUserByIdFunction(
             IConfiguration configuration,
-            IUnitOfWork unitOfWork,
-            IUserRepository userRepository,
-            SomeUserDomainService userDomainService)
+            IUserRepository userRepository)
         {
             _configuration = configuration;
-            _unitOfWork = unitOfWork;
             _userRepository = userRepository;
-            _userDomainService = userDomainService;
         }
 
 
@@ -61,9 +52,7 @@ namespace UserService.Functions
 
             serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
-            serviceCollection.AddTransient<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddTransient<IUserRepository, UserRepository>();
-            serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
@@ -73,34 +62,27 @@ namespace UserService.Functions
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
 
-            var userRequest = JsonSerializer.Deserialize<UpdateUserRequest>(request.Body);
+            var userId = Guid.Parse(request.PathParameters["userid"]);
+
+            // Could apply some logic here to approve the user deletion
+
+            var user = await _userRepository.GetById(userId);
 
 
-            var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
+            var response = new APIGatewayHttpApiV2ProxyResponse()
+                {Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}};
 
-            user.UpdatePersonalInfo(userRequest.FirstName, userRequest.LastName);
-
-            if (userRequest.HasSomeAddressInfo())
+            if (user != null)
             {
-                var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
-                    userRequest.State);
+                response.Body = Serialize(user);
+                response.StatusCode = (int) HttpStatusCode.OK;
 
-                user.UpdateAddressInfo(address);
+                // Publish to a topic about the user search
             }
             else
             {
-                user.RemoveAddress();
+                response.StatusCode = (int) HttpStatusCode.NotFound;
             }
-
-            _userRepository.Update(user);
-            _unitOfWork.SaveChanges();
-
-            var response = new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = (int) HttpStatusCode.OK,
-                Body = Serialize(user),
-                Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}
-            };
 
             return response;
         }

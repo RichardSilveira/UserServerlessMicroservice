@@ -1,6 +1,8 @@
-﻿namespace UserService.Functions
+﻿using System.Text.Json.Serialization;
+
+namespace UserService.Functions
 {
-    public class UserResponse
+    public class UpdateUserRequest
     {
         public string Id { get; set; }
         public string FirstName { get; set; }
@@ -9,7 +11,8 @@
         public string State { get; set; }
         public string City { get; set; }
         public string Street { get; set; }
-    }
 
-    // We may have some information that needs to be hidden from response (optional)
+        public bool HasSomeAddressInfo() => Country != "" || State != "" || City != "" || Street != "";
+        //TODO: I know, but I'm really tired right now =\
+    }
 }

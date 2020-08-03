@@ -18,6 +18,13 @@ namespace UserService.Domain
             LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
         }
 
-        public void SetAddress(Address address) => Address = address;
+        public void UpdateAddressInfo(Address address) => Address = address;
+        public void RemoveAddress() => Address = null;
+
+        public void UpdatePersonalInfo(string firstName, string lastName)
+        {
+            FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
+            LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+        }
     }
 }
