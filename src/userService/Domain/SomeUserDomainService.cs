@@ -1,4 +1,5 @@
-﻿using UserService.Functions;
+﻿using System;
+using UserService.Functions;
 
 namespace UserService.Domain
 {
@@ -11,6 +12,6 @@ namespace UserService.Domain
             _userRepository = userRepository;
         }
 
-        public bool DoSomeLogicInvolvingUser() => _userRepository.GetUser().FirstName == "Foo";
+        public bool DoSomeLogicInvolvingUser() => true;
     }
 }

@@ -11,6 +11,8 @@ using UserService;
 using UserService.Configuration;
 using UserService.Domain;
 using UserService.Functions;
+using UserService.Infrastructure.Repositories;
+using UserService.Infrastructure.Repositories.Transactions;
 using UserServiceTests.Infrastructure;
 using Xunit;
 
@@ -44,9 +46,29 @@ namespace UserServiceTests
             var user = new User("Foo", "Bar");
             proxy.Body = JsonSerializer.Serialize(user);
 
-            var userRepository = new UserRepositoryInMemoryStub();
+            var userRepository = new UserRepositoryInMemory();
+            var unitOfWork = new UnitOfWorkInMemory();
             var userDomainService = new SomeUserDomainService(userRepository);
-            var function = new AddNewUserFunction(_configuration, userRepository, userDomainService);
+            var function = new AddNewUserFunction(_configuration, unitOfWork, userRepository, userDomainService);
+            var result = await function.Handle(proxy, new TestLambdaContext());
+
+            Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
+        }
+
+        [Fact]
+        public async Task AddNewUser_Via_LocalMySql()
+        {
+            var proxy = new APIGatewayHttpApiV2ProxyRequest();
+
+            var user = new User("Foo", "Bar");
+            proxy.Body = JsonSerializer.Serialize(user);
+
+            var localMySqlDbCtxt = new UserServiceDbContext();
+
+            var userRepository = new UserRepository(localMySqlDbCtxt);
+            var unitOfWork = new UnitOfWork(localMySqlDbCtxt);
+            var userDomainService = new SomeUserDomainService(userRepository);
+            var function = new AddNewUserFunction(_configuration, unitOfWork, userRepository, userDomainService);
             var result = await function.Handle(proxy, new TestLambdaContext());
 
             Assert.True(result.StatusCode == (int) HttpStatusCode.Created);

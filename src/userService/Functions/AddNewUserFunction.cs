@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Configuration;
 using UserService.Domain;
+using UserService.Infrastructure.Repositories;
+using UserService.Infrastructure.Repositories.Transactions;
 using static System.Text.Json.JsonSerializer;
 
 // If targeting .NET Core 3.1 this serializer is highly recommend over Amazon.Lambda.Serialization.Json and can significantly reduce cold start performance in Lambda.
@@ -19,8 +21,11 @@ namespace UserService.Functions
 {
     public class AddNewUserFunction : FunctionBase
     {
-        private SomeUserDomainService _userDomainService;
+        private IUnitOfWork _unitOfWork;
         private IUserRepository _userRepository;
+
+        private SomeUserDomainService _userDomainService;
+
 
         // Invoked by AWS Lambda at runtime
         public AddNewUserFunction()
@@ -32,9 +37,12 @@ namespace UserService.Functions
          */
         public AddNewUserFunction(
             IConfiguration configuration,
+            IUnitOfWork unitOfWork,
             IUserRepository userRepository,
             SomeUserDomainService userDomainService) : base(configuration)
         {
+            
+            _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _userDomainService = userDomainService;
         }
@@ -45,14 +53,20 @@ namespace UserService.Functions
             serviceCollection.AddTransient<IEnvironmentService, EnvironmentService>();
             serviceCollection.AddTransient<IConfigurationService, ConfigurationService>();
 
-            // Other injections here
-            serviceCollection.AddScoped<IUserRepository, UserRepositoryInMemory>();
+            // Other injections goes here
+            serviceCollection.AddScoped<UserServiceDbContext>();
+            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            serviceCollection.AddScoped<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
         protected override void Configure(IServiceProvider serviceProvider)
         {
             base.Configure(serviceProvider);
+
+            var userServiceContext = serviceProvider.GetService<UserServiceDbContext>();
+            _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
             _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
         }
@@ -63,9 +77,7 @@ namespace UserService.Functions
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
 
-            await Task.CompletedTask; //todo: I'll replace it
-
-            var userRetrieved = _userRepository.GetUser();
+            var userRetrieved = await _userRepository.GetById(Guid.Empty);
             LambdaLogger.Log("userRetrieved: " + Serialize(userRetrieved));
 
             var isValid = _userDomainService.DoSomeLogicInvolvingUser();
@@ -78,6 +90,10 @@ namespace UserService.Functions
             var userRequest = JsonSerializer.Deserialize<UserRequest>(request.Body);
 
             var user = new User(userRequest.FirstName, userRequest.LastName);
+
+            _userRepository.Add(user);
+            _unitOfWork.SaveChanges();
+            //todo: dispose connection
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {

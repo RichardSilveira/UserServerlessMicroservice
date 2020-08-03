@@ -1,9 +1,10 @@
-﻿using UserService.Domain;
+﻿using System;
+using System.Threading.Tasks;
+using UserService.SharedKernel;
 
-namespace UserService.Functions
+namespace UserService.Domain
 {
-    public interface IUserRepository
+    public interface IUserRepository: IRepository<User, Guid>
     {
-        User GetUser();
     }
 }

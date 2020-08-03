@@ -1,14 +1,16 @@
 ﻿using System;
 using UserService.Functions;
+using UserService.SharedKernel;
 
 namespace UserService.Domain
 {
-    public class User
+    public class User: Entity
     {
         //todo: id as uuid (flake)
         public string FirstName { get; private set; }
+
         public string LastName { get; private set; }
-        public CivilAddress Address { get; private set; } //todo: may have a collection of addresses
+        //TODO: public CivilAddress Address { get; private set; } //todo: may have a collection of addresses
 
         public User(string firstName, string lastName)
         {
