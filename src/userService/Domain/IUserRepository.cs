@@ -11,7 +11,7 @@ namespace UserService.Domain
 
         void Update(User entity);
 
-        Task Delete(Guid Id);
+        void Delete(User entity);
 
         Task<User> GetById(Guid Id);
 

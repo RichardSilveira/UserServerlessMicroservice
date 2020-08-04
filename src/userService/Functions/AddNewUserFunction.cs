@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Configuration;
 using UserService.Domain;
+using UserService.Extensions;
 using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Repositories.Transactions;
 using static System.Text.Json.JsonSerializer;
@@ -20,18 +21,22 @@ using static System.Text.Json.JsonSerializer;
 
 namespace UserService.Functions
 {
-    public class AddNewUserFunction
+    public class AddNewUserFunction : FunctionBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserRepository _userRepository;
+        private IConfiguration _configuration;
+        private IUnitOfWork _unitOfWork;
+        private IUserRepository _userRepository;
 
         private SomeUserDomainService _userDomainService;
 
 
-        // Invoked by AWS Lambda at runtime
-        public AddNewUserFunction()
+        private void Configure()
         {
+            LambdaLogger.Log("Configure Starts");
+            LambdaLogger.Log("RunningAsLocal?" + RunningAsLocal);
+            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
+            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
+            LambdaLogger.Log("_userDomainService:" + (_userDomainService == null).ToString());
             _configuration = new ConfigurationService().GetConfiguration();
 
             var serviceCollection = new ServiceCollection();
@@ -41,6 +46,15 @@ namespace UserService.Functions
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
             _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
+            LambdaLogger.Log("Configure after injection");
+            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
+            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
+            LambdaLogger.Log("_userDomainService:" + (_userDomainService == null).ToString());
+        }
+
+        public AddNewUserFunction()
+        {
+            // Parameterless constructor required by AWS Lambda runtime 
         }
 
         /* You need pass all your abstractions here to have them injected for tests.
@@ -52,6 +66,7 @@ namespace UserService.Functions
             IUserRepository userRepository,
             SomeUserDomainService userDomainService)
         {
+            RunningAsLocal = true;
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
@@ -76,6 +91,10 @@ namespace UserService.Functions
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
 
+            if (!RunningAsLocal)
+                Configure();
+
+
             var userRequest = JsonSerializer.Deserialize<AddUserRequest>(request.Body);
 
             var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
@@ -87,19 +106,16 @@ namespace UserService.Functions
             _userRepository.Add(user);
             _unitOfWork.SaveChanges();
 
-            var response = new APIGatewayHttpApiV2ProxyResponse
+
+            return Created(options =>
             {
-                StatusCode = (int) HttpStatusCode.Created,
-                Body = Serialize(user),
-                Headers = new Dictionary<string, string>
+                options.Body = Serialize(user);
+                options.Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
                     {"Location", $"https://e8teskfbxf.execute-api.us-east-1.amazonaws.com/dev/v1/users/{user.Id}"}
-                }
-            };
-            // Location Header should be set after you've a dns name
-
-            return response;
+                };
+            });
         }
 
         //TODO: Handling bad request responses

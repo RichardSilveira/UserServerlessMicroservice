@@ -16,18 +16,17 @@ using static System.Text.Json.JsonSerializer;
 
 namespace UserService.Functions
 {
-    public class DeleteUserFunction
+    public class DeleteUserFunction : FunctionBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserRepository _userRepository;
+        private IConfiguration _configuration;
+        private IUnitOfWork _unitOfWork;
+        private IUserRepository _userRepository;
 
-        private SomeUserDomainService _userDomainService;
-
-
-        // Invoked by AWS Lambda at runtime
-        public DeleteUserFunction()
+        private void Configure()
         {
+            LambdaLogger.Log("Configure Starts");
+            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
+            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
             _configuration = new ConfigurationService().GetConfiguration();
 
             var serviceCollection = new ServiceCollection();
@@ -36,7 +35,14 @@ namespace UserService.Functions
 
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
-            _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
+            LambdaLogger.Log("Configure after injection");
+            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
+            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
+        }
+
+        public DeleteUserFunction()
+        {
+            // Parameterless constructor required by AWS Lambda runtime 
         }
 
         /* You need pass all your abstractions here to have them injected for tests.
@@ -45,13 +51,13 @@ namespace UserService.Functions
         public DeleteUserFunction(
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
-            IUserRepository userRepository,
-            SomeUserDomainService userDomainService)
+            IUserRepository userRepository)
         {
+            RunningAsLocal = true;
+
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
-            _userDomainService = userDomainService;
         }
 
 
@@ -61,8 +67,8 @@ namespace UserService.Functions
 
             serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
-            serviceCollection.AddTransient<IUnitOfWork, UnitOfWork>();
-            serviceCollection.AddTransient<IUserRepository, UserRepository>();
+            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+            serviceCollection.AddScoped<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
@@ -72,13 +78,18 @@ namespace UserService.Functions
             //todo: bad request
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
+            if (!RunningAsLocal)
+                Configure();
 
+            LambdaLogger.Log("Path " + request.PathParameters["userid"]);
             var userId = Guid.Parse(request.PathParameters["userid"]);
 
-            // Could apply some logic here to approve the user deletion
 
-            await _userRepository.Delete(userId);
-            _unitOfWork.SaveChanges();
+            var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
+            if (user == null) return NotFound();
+
+            _userRepository.Delete(user);
+            _unitOfWork.SaveChanges(); //todo: dispose required because of how Lambda works
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {

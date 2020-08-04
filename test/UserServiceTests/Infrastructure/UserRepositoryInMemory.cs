@@ -19,9 +19,9 @@ namespace UserServiceTests.Infrastructure
             //TODO: Implemen it later
         }
 
-        public Task Delete(Guid Id)
+        public void Delete(User entity)
         {
-            throw new NotImplementedException();
+            //TODO: Implemen it later
         }
 
         public Task<User> GetById(Guid Id)

@@ -30,9 +30,9 @@ namespace UserService.Infrastructure.Repositories
             _crudMethods.Update(entity);
         }
 
-        public async Task Delete(Guid Id)
+        public void Delete(User entity)
         {
-            await _crudMethods.Delete(Id);
+            _crudMethods.Delete(entity);
         }
 
         public async Task<User> GetById(Guid Id)

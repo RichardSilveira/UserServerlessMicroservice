@@ -63,7 +63,7 @@ namespace UserServiceTests
 
             var result = function.Handle(proxy, new TestLambdaContext());
 
-            Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
+            Assert.True(result.StatusCode == (int) HttpStatusCode.OK);
         }
 
         [Fact]

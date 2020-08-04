@@ -16,18 +16,21 @@ using static System.Text.Json.JsonSerializer;
 
 namespace UserService.Functions
 {
-    public class UpdateUserFunction
+    public class UpdateUserFunction : FunctionBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserRepository _userRepository;
+        private IConfiguration _configuration;
+        private IUnitOfWork _unitOfWork;
+        private IUserRepository _userRepository;
 
         private SomeUserDomainService _userDomainService;
 
 
-        // Invoked by AWS Lambda at runtime
-        public UpdateUserFunction()
+        private void Configure()
         {
+            LambdaLogger.Log("Configure Starts");
+            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
+            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
+            LambdaLogger.Log("_userDomainService:" + (_userDomainService == null).ToString());
             _configuration = new ConfigurationService().GetConfiguration();
 
             var serviceCollection = new ServiceCollection();
@@ -37,6 +40,15 @@ namespace UserService.Functions
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
             _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
+            LambdaLogger.Log("Configure after injection");
+            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
+            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
+            LambdaLogger.Log("_userDomainService:" + (_userDomainService == null).ToString());
+        }
+
+        // Parameterless constructor required by AWS Lambda runtime 
+        public UpdateUserFunction()
+        {
         }
 
         /* You need pass all your abstractions here to have them injected for tests.
@@ -48,6 +60,7 @@ namespace UserService.Functions
             IUserRepository userRepository,
             SomeUserDomainService userDomainService)
         {
+            RunningAsLocal = true;
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
@@ -61,8 +74,8 @@ namespace UserService.Functions
 
             serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
-            serviceCollection.AddTransient<IUnitOfWork, UnitOfWork>();
-            serviceCollection.AddTransient<IUserRepository, UserRepository>();
+            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+            serviceCollection.AddScoped<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
@@ -73,10 +86,17 @@ namespace UserService.Functions
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
 
+            LambdaLogger.Log("Path " + request.PathParameters["userid"]);
+
+            if (!RunningAsLocal)
+                Configure();
+
             var userRequest = JsonSerializer.Deserialize<UpdateUserRequest>(request.Body);
 
 
             var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
+            if (user == null) return NotFound();
+
 
             user.UpdatePersonalInfo(userRequest.FirstName, userRequest.LastName);
 
@@ -93,7 +113,7 @@ namespace UserService.Functions
             }
 
             _userRepository.Update(user);
-            _unitOfWork.SaveChanges();
+            _unitOfWork.SaveChanges(); //todo: dispose
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {

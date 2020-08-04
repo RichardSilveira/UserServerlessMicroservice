@@ -18,12 +18,10 @@ namespace UserService.Functions
 {
     public class GetUserByIdFunction
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUserRepository _userRepository;
+        private IConfiguration _configuration;
+        private IUserRepository _userRepository;
 
-
-        // Invoked by AWS Lambda at runtime
-        public GetUserByIdFunction()
+        private void Configure()
         {
             _configuration = new ConfigurationService().GetConfiguration();
 
@@ -32,6 +30,11 @@ namespace UserService.Functions
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             _userRepository = serviceProvider.GetService<IUserRepository>();
+        }
+
+        // Invoked by AWS Lambda at runtime
+        public GetUserByIdFunction()
+        {
         }
 
         /* You need pass all your abstractions here to have them injected for tests.
@@ -52,7 +55,7 @@ namespace UserService.Functions
 
             serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
-            serviceCollection.AddTransient<IUserRepository, UserRepository>();
+            serviceCollection.AddScoped<IUserRepository, UserRepository>();
         }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
@@ -61,6 +64,7 @@ namespace UserService.Functions
             //todo: bad request
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
+            Configure();
 
             var userId = Guid.Parse(request.PathParameters["userid"]);
 
