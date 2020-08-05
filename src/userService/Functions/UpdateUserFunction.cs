@@ -73,7 +73,7 @@ namespace UserService.Functions
             if (!RunningAsLocal)
                 ConfigureDependencies();
 
-            var userRequest = JsonSerializer.Deserialize<UpdateUserRequest>(request.Body);
+            var userRequest = Deserialize<UpdateUserRequest>(request.Body);
 
 
             var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
@@ -87,15 +87,16 @@ namespace UserService.Functions
                 var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
                     userRequest.State);
 
-                user.UpdateAddressInfo(address);
+                user.UpdateAddressInfo(address); //todo: raise event to signalize the own user or other service about it
             }
             else
             {
-                user.RemoveAddress();
+                user.RemoveAddress(); //todo: me way have a shipping associated with the user, then his address can't be removed.
             }
 
             _userRepository.Update(user);
-            _unitOfWork.SaveChanges(); //todo: dispose
+            _unitOfWork.SaveChanges();
+            _unitOfWork.Dispose();
 
             var response = new APIGatewayHttpApiV2ProxyResponse
             {

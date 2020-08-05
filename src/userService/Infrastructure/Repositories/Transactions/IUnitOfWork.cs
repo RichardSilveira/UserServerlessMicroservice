@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace UserService.Infrastructure.Repositories.Transactions
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork: IDisposable
     {
         void SaveChanges();
     }

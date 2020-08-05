@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace UserService.Infrastructure.Repositories.Transactions
 {
@@ -12,5 +13,10 @@ namespace UserService.Infrastructure.Repositories.Transactions
         }
 
         public void SaveChanges() => _context.SaveChanges();
+
+        public void Dispose()
+        {
+            _context?.Dispose();
+        }
     }
 }

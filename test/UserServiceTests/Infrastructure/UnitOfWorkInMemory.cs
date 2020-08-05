@@ -8,5 +8,9 @@ namespace UserServiceTests.Infrastructure
         public void SaveChanges()
         {
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

@@ -73,7 +73,8 @@ namespace UserService.Functions
             if (user == null) return NotFound();
 
             _userRepository.Delete(user);
-            _unitOfWork.SaveChanges(); //todo: dispose required because of how Lambda works
+            _unitOfWork.SaveChanges();
+            _unitOfWork.Dispose();
 
             return NoContent();
         }

@@ -75,7 +75,7 @@ namespace UserService.Functions
             if (!RunningAsLocal) ConfigureDependencies();
 
 
-            var userRequest = JsonSerializer.Deserialize<AddUserRequest>(request.Body);
+            var userRequest = Deserialize<AddUserRequest>(request.Body);
 
             var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
                 userRequest.State);
@@ -84,7 +84,8 @@ namespace UserService.Functions
             user.UpdateAddressInfo(address);
 
             _userRepository.Add(user);
-            _unitOfWork.SaveChanges(); //todo: dispose it
+            _unitOfWork.SaveChanges();
+            _unitOfWork.Dispose(); // Sounds good dispose explicitly because of the Lambda "nature"
 
 
             return Created(options =>
