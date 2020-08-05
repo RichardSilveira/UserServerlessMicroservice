@@ -11,6 +11,7 @@ using Moq;
 using UserService;
 using UserService.Configuration;
 using UserService.Domain;
+using UserService.Domain.Requests;
 using UserService.Functions;
 using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Repositories.Transactions;
@@ -46,8 +47,11 @@ namespace UserServiceTests
             {
                 FirstName = "Julia",
                 LastName = "Doe",
-                Country = "Brazil",
-                Street = "Flower St."
+                Address = new AddressRequest()
+                {
+                    Country = "Brazil",
+                    Street = "Flower St."
+                }
             };
 
             proxy.Body = JsonSerializer.Serialize(addUserRequest);
@@ -73,8 +77,11 @@ namespace UserServiceTests
             {
                 FirstName = "John",
                 LastName = "Doe",
-                Country = "Argentina",
-                State = "Buenos Aires"
+                Address = new AddressRequest()
+                {
+                    Country = "Argentina",
+                    Street = "Buenos Aires"
+                }
             };
 
             proxy.Body = JsonSerializer.Serialize(addUserRequest);

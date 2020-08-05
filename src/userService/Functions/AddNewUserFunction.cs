@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Configuration;
 using UserService.Domain;
+using UserService.Domain.Requests;
+using UserService.Domain.Validators;
 using UserService.Extensions;
 using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Repositories.Transactions;
@@ -71,13 +73,26 @@ namespace UserService.Functions
             if (!RunningAsLocal) ConfigureDependencies();
 
 
-            var userRequest = Deserialize<AddUserRequest>(request.Body);
+            var userReq = Deserialize<AddUserRequest>(request.Body);
 
-            var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
-                userRequest.State);
+            var userValidator = new AddUserRequestValidator();
+            var userValidationResult = userValidator.Validate(userReq);
 
-            var user = new User(userRequest.FirstName, userRequest.LastName);
-            user.UpdateAddressInfo(address);
+            if (!userValidationResult.IsValid)
+                return BadRequest(userValidationResult.Errors.ToModelFailures());
+
+
+            var user = new User(userReq.FirstName, userReq.LastName);
+
+            if (userReq.Address != null)
+            {
+                var userAddressReq = userReq.Address;
+
+                var userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City,
+                    userAddressReq.State);
+
+                user.UpdateAddress(userAddress); //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well)
+            }
 
             _userRepository.Add(user);
             _unitOfWork.SaveChanges();
@@ -93,7 +108,5 @@ namespace UserService.Functions
                 };
             });
         }
-
-        //TODO: Handling bad request responses
     }
 }

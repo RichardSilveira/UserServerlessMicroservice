@@ -1,10 +1,11 @@
 ﻿using FluentValidation;
+using UserService.Domain.Requests;
 
 namespace UserService.Domain
 {
-    public class ChangeAddressValidation : AbstractValidator<Address>
+    public class AddressValidator : AbstractValidator<AddressRequest>
     {
-        public ChangeAddressValidation()
+        public AddressValidator()
         {
             RuleFor(p => p.Country)
                 .NotEmpty().WithMessage("Please inform the Country");

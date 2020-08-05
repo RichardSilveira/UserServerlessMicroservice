@@ -1,11 +1,16 @@
-﻿using FluentValidation;
+﻿using System;
+using FluentValidation;
+using UserService.Domain.Requests;
 
-namespace UserService.Domain
+namespace UserService.Domain.Validators
 {
-    public class AddOrUpdateUserValidation : AbstractValidator<User>
+    public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
     {
-        public AddOrUpdateUserValidation()
+        public UpdateUserRequestValidator()
         {
+            RuleFor(p => p.Id)
+                .NotEqual(Guid.Empty.ToString());
+
             RuleFor(p => p.FirstName)
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotEmpty().WithMessage("Please enter the First Name")
@@ -15,6 +20,8 @@ namespace UserService.Domain
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotEmpty().WithMessage("Please enter the Last Name")
                 .Length(3, 200).WithMessage("The Last Name must have between 2 and 150 characters");
+
+            RuleFor(p => p.Address).SetValidator(new AddressValidator());
         }
     }
 }

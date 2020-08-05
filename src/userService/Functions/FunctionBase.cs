@@ -5,6 +5,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UserService.Extensions;
 using static System.Text.Json.JsonSerializer;
 
 namespace UserService.Functions
@@ -137,6 +138,27 @@ namespace UserService.Functions
             new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.NotFound,
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"}
+                }
+            };
+
+        protected APIGatewayHttpApiV2ProxyResponse BadRequest(string errorMessage) =>
+            new APIGatewayHttpApiV2ProxyResponse()
+            {
+                StatusCode = (int) HttpStatusCode.BadRequest,
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"}
+                }
+            };
+
+        protected APIGatewayHttpApiV2ProxyResponse BadRequest(IEnumerable<ModelFailure> errors) =>
+            new APIGatewayHttpApiV2ProxyResponse()
+            {
+                StatusCode = (int) HttpStatusCode.BadRequest,
+                Body = Serialize(errors),
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"}

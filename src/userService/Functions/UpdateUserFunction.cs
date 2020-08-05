@@ -10,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Configuration;
 using UserService.Domain;
+using UserService.Domain.Requests;
+using UserService.Domain.Validators;
+using UserService.Extensions;
 using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Repositories.Transactions;
 using static System.Text.Json.JsonSerializer;
@@ -65,25 +68,35 @@ namespace UserService.Functions
 
             if (!RunningAsLocal) ConfigureDependencies();
 
-            var userRequest = Deserialize<UpdateUserRequest>(request.Body);
+            var userReq = Deserialize<UpdateUserRequest>(request.Body);
 
-            var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
-            if (user == null) return NotFound();
+            var userValidator = new Lazy<UpdateUserRequestValidator>(() => new UpdateUserRequestValidator());
 
+            var userId = request.PathParameters["userid"];
 
-            user.UpdatePersonalInfo(userRequest.FirstName, userRequest.LastName);
+            if (userReq.Id != userId)
+                return BadRequest("The user ID must be the same at both body request and url path parameter");
 
-            if (userRequest.HasSomeAddressInfo())
+            var userValidationResult = userValidator.Value.Validate(userReq);
+
+            if (!userValidationResult.IsValid)
+                return BadRequest(userValidationResult.Errors.ToModelFailures());
+
+            var userRetrieved = await _userRepository.GetById(Guid.Parse(userId));
+            if (userRetrieved == null) return NotFound();
+
+            var user = new User(userReq.FirstName, userReq.LastName);
+
+            if (userReq.Address != null)
             {
-                var address = new Address(userRequest.Country, userRequest.Street, userRequest.City,
-                    userRequest.State);
+                var userAddressReq = userReq.Address;
 
-                user.UpdateAddressInfo(address); //todo: raise event to signalize the own user or other service about it
+                var userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City, userAddressReq.State);
+
+                user.UpdateAddress(userAddress); //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well)
             }
-            else
-            {
-                user.RemoveAddress(); //todo: me way have a shipping associated with the user, then his address can't be removed.
-            }
+            //todo: me way have a shipping associated with the user, then his address can't be removed. (domain service)
+            // if denied by domain service, return badrequest and dont dispatch all list of events.
 
             _userRepository.Update(user);
             _unitOfWork.SaveChanges();
