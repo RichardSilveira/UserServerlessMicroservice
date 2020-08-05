@@ -11,7 +11,7 @@ namespace UserService
         public IConfiguration Configuration { get; private set; }
 
         private static readonly Lazy<ConfigurationService> _instance =
-            new Lazy<ConfigurationService>(() => new ConfigurationService());
+            new Lazy<ConfigurationService>(() => new ConfigurationService(), true);
 
         public static ConfigurationService Instance => _instance.Value;
 
