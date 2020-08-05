@@ -27,7 +27,7 @@ namespace UserServiceTests
         public AddNewUserFunctionTest()
         {
             // Should mock the Stage variable that is created by serverless framework
-            var stage = "test";
+            var stage = "prod";
 
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())

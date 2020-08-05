@@ -62,7 +62,10 @@ namespace UserService.Functions
 
             var userId = Guid.Parse(request.PathParameters["userid"]);
 
-            var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
+            if (userId == Guid.Empty)
+                return BadRequest("You must inform the user Id");
+
+            var user = await _userRepository.GetById(userId);
             if (user == null) return NotFound();
 
             _userRepository.Delete(user);

@@ -148,6 +148,7 @@ namespace UserService.Functions
             new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.BadRequest,
+                Body = errorMessage,
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"}

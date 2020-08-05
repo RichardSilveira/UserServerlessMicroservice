@@ -18,7 +18,7 @@ namespace UserService.Domain
 
         public Address(string country, string street = null, string city = null, string state = null)
         {
-            Country = country ?? throw new ArgumentNullException(nameof(country));
+            Country = country;
             State = state;
             City = city;
             Street = street;

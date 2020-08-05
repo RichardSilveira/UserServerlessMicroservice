@@ -15,6 +15,8 @@ namespace UserService.Domain
 
         public User(string firstName, string lastName)
         {
+            FirstName = firstName;
+            LastName = lastName;
         }
 
         public void UpdateAddress(Address address) => Address = address;
@@ -22,9 +24,8 @@ namespace UserService.Domain
 
         public void UpdatePersonalInfo(string firstName, string lastName)
         {
-            //todo: improve this design later 
-            FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-            LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+            FirstName = firstName;
+            LastName = lastName;
         }
     }
 }

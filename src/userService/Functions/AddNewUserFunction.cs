@@ -72,7 +72,6 @@ namespace UserService.Functions
 
             if (!RunningAsLocal) ConfigureDependencies();
 
-
             var userReq = Deserialize<AddUserRequest>(request.Body);
 
             var userValidator = new AddUserRequestValidator();

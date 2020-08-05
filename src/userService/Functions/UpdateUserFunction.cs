@@ -82,10 +82,10 @@ namespace UserService.Functions
             if (!userValidationResult.IsValid)
                 return BadRequest(userValidationResult.Errors.ToModelFailures());
 
-            var userRetrieved = await _userRepository.GetById(Guid.Parse(userId));
-            if (userRetrieved == null) return NotFound();
+            var user = await _userRepository.GetById(Guid.Parse(userId));
+            if (user == null) return NotFound();
 
-            var user = new User(userReq.FirstName, userReq.LastName);
+            user.UpdatePersonalInfo(userReq.FirstName, userReq.LastName);
 
             if (userReq.Address != null)
             {
@@ -93,8 +93,11 @@ namespace UserService.Functions
 
                 var userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City, userAddressReq.State);
 
-                user.UpdateAddress(userAddress); //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well)
+                user.UpdateAddress(
+                    userAddress); //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well) (checking internally)
             }
+            else
+                user.RemoveAddress();
             //todo: me way have a shipping associated with the user, then his address can't be removed. (domain service)
             // if denied by domain service, return badrequest and dont dispatch all list of events.
 
