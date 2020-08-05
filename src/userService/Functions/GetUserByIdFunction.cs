@@ -39,26 +39,20 @@ namespace UserService.Functions
         {
         }
 
-        /* You need pass all your abstractions here to have them injected for tests.
-         This way neither the ConfigureServices nor the Configure won't be called.
-         */
         public GetUserByIdFunction(
             IConfiguration configuration,
             IUserRepository userRepository)
         {
+            // Constructor used by tests
             _userRepository = userRepository;
         }
 
 
-        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
-            ILambdaContext context)
+        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
         {
-            //todo: bad request
-            LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
-            LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
+            LogFunctionMetadata(request, context);
 
-            if (!RunningAsLocal)
-                ConfigureDependencies();
+            if (!RunningAsLocal) ConfigureDependencies();
 
             var userId = Guid.Parse(request.PathParameters["userid"]);
 

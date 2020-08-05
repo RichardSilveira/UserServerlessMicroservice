@@ -46,35 +46,26 @@ namespace UserService.Functions
         {
         }
 
-        /* You need pass all your abstractions here to have them injected for tests.
-         This way neither the ConfigureServices nor the Configure won't be called.
-         */
+
         public UpdateUserFunction(
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
             IUserRepository userRepository,
-            SomeUserDomainService userDomainService)
+            SomeUserDomainService userDomainService) : base(configuration)
         {
-            RunningAsLocal = true;
+            // Constructor used by tests
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _userDomainService = userDomainService;
         }
 
-        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
-            ILambdaContext context)
+        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
         {
-            //todo: bad request
-            LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
-            LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
+            LogFunctionMetadata(request, context);
 
-            LambdaLogger.Log("Path " + request.PathParameters["userid"]);
-
-            if (!RunningAsLocal)
-                ConfigureDependencies();
+            if (!RunningAsLocal) ConfigureDependencies();
 
             var userRequest = Deserialize<UpdateUserRequest>(request.Body);
-
 
             var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
             if (user == null) return NotFound();
@@ -98,14 +89,7 @@ namespace UserService.Functions
             _unitOfWork.SaveChanges();
             _unitOfWork.Dispose();
 
-            var response = new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = (int) HttpStatusCode.OK,
-                Body = Serialize(user),
-                Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}
-            };
-
-            return response;
+            return Ok(user);
         }
     }
 }

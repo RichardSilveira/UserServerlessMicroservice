@@ -11,6 +11,7 @@
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.1.0" />
     <PackageReference Include="Amazon.Lambda.Core" Version="1.1.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.0.1" />
+    <PackageReference Include="FluentValidation" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.6" />

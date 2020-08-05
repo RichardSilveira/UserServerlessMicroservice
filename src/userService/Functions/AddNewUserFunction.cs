@@ -47,30 +47,26 @@ namespace UserService.Functions
             _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
         }
 
+        // Parameterless constructor required by AWS Lambda runtime 
         public AddNewUserFunction()
         {
-            // Parameterless constructor required by AWS Lambda runtime 
         }
 
-        /* You need pass all your abstractions here to have them injected for tests.
-         This way neither the ConfigureServices nor the Configure won't be called.
-         */
         public AddNewUserFunction(
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
             IUserRepository userRepository,
             SomeUserDomainService userDomainService) : base(configuration)
         {
+            // Constructor used by tests
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _userDomainService = userDomainService;
         }
 
-        public APIGatewayHttpApiV2ProxyResponse Handle(APIGatewayHttpApiV2ProxyRequest request,
-            ILambdaContext context)
+        public APIGatewayHttpApiV2ProxyResponse Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
         {
-            LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
-            LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
+            LogFunctionMetadata(request, context);
 
             if (!RunningAsLocal) ConfigureDependencies();
 
@@ -88,16 +84,12 @@ namespace UserService.Functions
             _unitOfWork.Dispose(); // Sounds good dispose explicitly because of the Lambda "nature"
 
 
-            return Created(options =>
+            return Created(user, options =>
             {
-                options.Body = Serialize(user);
                 options.Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
-                    {
-                        "Location",
-                        $"https://e8teskfbxf.execute-api.us-east-1.amazonaws.com/{Configuration["STAGE"]}/v1/users/{user.Id}"
-                    }
+                    {"Location", $"{Configuration["apiRootUri"]}/{Configuration["STAGE"]}/v1/users/{user.Id}"}
                 };
             });
         }

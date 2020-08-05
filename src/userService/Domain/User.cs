@@ -7,6 +7,7 @@ namespace UserService.Domain
 {
     public class User : Entity
     {
+        //todo: Add email and handle with uniqueness issue
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
 
@@ -17,7 +18,7 @@ namespace UserService.Domain
             FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
             LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
         }
-
+        
         public void UpdateAddressInfo(Address address) => Address = address;
         public void RemoveAddress() => Address = null;
 

@@ -43,31 +43,24 @@ namespace UserService.Functions
             // Parameterless constructor required by AWS Lambda runtime 
         }
 
-        /* You need pass all your abstractions here to have them injected for tests.
-         This way neither the ConfigureServices nor the Configure won't be called.
-         */
         public DeleteUserFunction(
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
             IUserRepository userRepository) : base(configuration)
         {
+            // Constructor used by tests
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
         }
 
 
-        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
-            ILambdaContext context)
+        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
         {
-            //todo: bad request
-            LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
-            LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
-            if (!RunningAsLocal)
-                ConfigureDependencies();
+            LogFunctionMetadata(request, context);
 
-            LambdaLogger.Log("Path " + request.PathParameters["userid"]);
+            if (!RunningAsLocal) ConfigureDependencies();
+
             var userId = Guid.Parse(request.PathParameters["userid"]);
-
 
             var user = await _userRepository.GetById(Guid.Parse(request.PathParameters["userid"]));
             if (user == null) return NotFound();
