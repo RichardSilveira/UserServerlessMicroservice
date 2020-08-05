@@ -2,13 +2,34 @@
 using System.Collections.Generic;
 using System.Net;
 using Amazon.Lambda.APIGatewayEvents;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using static System.Text.Json.JsonSerializer;
 
 namespace UserService.Functions
 {
-    public class FunctionBase
+    public abstract class FunctionBase
     {
+        protected IConfiguration Configuration { get; private set; }
         protected bool RunningAsLocal = false;
+
+        public FunctionBase() => Configuration = ConfigurationService.Instance.Configuration;
+
+        public FunctionBase(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            RunningAsLocal = true;
+        }
+
+        protected void ConfigureDependencies()
+        {
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
+            Configure(serviceCollection.BuildServiceProvider());
+        }
+
+        protected abstract void ConfigureServices(IServiceCollection serviceCollection);
+        protected abstract void Configure(IServiceProvider serviceProvider);
 
         protected APIGatewayHttpApiV2ProxyResponse Ok() => new APIGatewayHttpApiV2ProxyResponse()
         {
@@ -98,7 +119,7 @@ namespace UserService.Functions
                 {"Content-Type", "application/json"}
             }
         };
-        
+
         protected APIGatewayHttpApiV2ProxyResponse NotFound() => new APIGatewayHttpApiV2ProxyResponse()
         {
             StatusCode = (int) HttpStatusCode.NotFound,

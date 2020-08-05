@@ -16,19 +16,21 @@ using static System.Text.Json.JsonSerializer;
 
 namespace UserService.Functions
 {
-    public class GetUserByIdFunction
+    public class GetUserByIdFunction : FunctionBase
     {
-        private IConfiguration _configuration;
         private IUserRepository _userRepository;
 
-        private void Configure()
+        protected override void ConfigureServices(IServiceCollection serviceCollection)
         {
-            _configuration = new ConfigurationService().GetConfiguration();
+            var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
+            serviceCollection.AddScoped<IUserRepository, UserRepository>();
+        }
+
+        protected override void Configure(IServiceProvider serviceProvider)
+        {
             _userRepository = serviceProvider.GetService<IUserRepository>();
         }
 
@@ -44,19 +46,9 @@ namespace UserService.Functions
             IConfiguration configuration,
             IUserRepository userRepository)
         {
-            _configuration = configuration;
             _userRepository = userRepository;
         }
 
-
-        private void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            var connString = _configuration["UserServiceDbContextConnectionString"];
-
-            serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
-
-            serviceCollection.AddScoped<IUserRepository, UserRepository>();
-        }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
             ILambdaContext context)
@@ -64,31 +56,18 @@ namespace UserService.Functions
             //todo: bad request
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
-            Configure();
+
+            if (!RunningAsLocal)
+                ConfigureDependencies();
 
             var userId = Guid.Parse(request.PathParameters["userid"]);
 
             // Could apply some logic here to approve the user deletion
 
             var user = await _userRepository.GetById(userId);
+            if (user == null) return NotFound();
 
-
-            var response = new APIGatewayHttpApiV2ProxyResponse()
-                {Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}};
-
-            if (user != null)
-            {
-                response.Body = Serialize(user);
-                response.StatusCode = (int) HttpStatusCode.OK;
-
-                // Publish to a topic about the user search
-            }
-            else
-            {
-                response.StatusCode = (int) HttpStatusCode.NotFound;
-            }
-
-            return response;
+            return Ok(user);
         }
     }
 }

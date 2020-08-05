@@ -27,13 +27,11 @@ namespace UserServiceTests
         {
             // Should mock the Stage variable that is created by serverless framework
             var stage = "test";
-            var mockConfig = new Mock<IEnvironmentService>();
-            mockConfig.Setup(p => p.EnvironmentName).Returns(stage);
 
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{mockConfig.Object.EnvironmentName}.json", optional: true)
+                .AddJsonFile($"appsettings.{stage}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
         }
@@ -63,7 +61,7 @@ namespace UserServiceTests
 
             var result = function.Handle(proxy, new TestLambdaContext());
 
-            Assert.True(result.StatusCode == (int) HttpStatusCode.OK);
+            Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
         }
 
         [Fact]

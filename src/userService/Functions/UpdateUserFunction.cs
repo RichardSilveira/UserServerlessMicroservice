@@ -18,32 +18,27 @@ namespace UserService.Functions
 {
     public class UpdateUserFunction : FunctionBase
     {
-        private IConfiguration _configuration;
         private IUnitOfWork _unitOfWork;
         private IUserRepository _userRepository;
 
         private SomeUserDomainService _userDomainService;
 
-
-        private void Configure()
+        protected override void ConfigureServices(IServiceCollection serviceCollection)
         {
-            LambdaLogger.Log("Configure Starts");
-            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
-            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
-            LambdaLogger.Log("_userDomainService:" + (_userDomainService == null).ToString());
-            _configuration = new ConfigurationService().GetConfiguration();
+            var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
+            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+            serviceCollection.AddScoped<IUserRepository, UserRepository>();
+            serviceCollection.AddScoped<SomeUserDomainService>();
+        }
+
+        protected override void Configure(IServiceProvider serviceProvider)
+        {
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
             _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
-            LambdaLogger.Log("Configure after injection");
-            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
-            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
-            LambdaLogger.Log("_userDomainService:" + (_userDomainService == null).ToString());
         }
 
         // Parameterless constructor required by AWS Lambda runtime 
@@ -61,22 +56,9 @@ namespace UserService.Functions
             SomeUserDomainService userDomainService)
         {
             RunningAsLocal = true;
-            _configuration = configuration;
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _userDomainService = userDomainService;
-        }
-
-
-        private void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            var connString = _configuration["UserServiceDbContextConnectionString"];
-
-            serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
-
-            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
-            serviceCollection.AddScoped<IUserRepository, UserRepository>();
-            serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
@@ -89,7 +71,7 @@ namespace UserService.Functions
             LambdaLogger.Log("Path " + request.PathParameters["userid"]);
 
             if (!RunningAsLocal)
-                Configure();
+                ConfigureDependencies();
 
             var userRequest = JsonSerializer.Deserialize<UpdateUserRequest>(request.Body);
 

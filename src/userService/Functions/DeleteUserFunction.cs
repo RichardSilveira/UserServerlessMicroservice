@@ -18,26 +18,24 @@ namespace UserService.Functions
 {
     public class DeleteUserFunction : FunctionBase
     {
-        private IConfiguration _configuration;
         private IUnitOfWork _unitOfWork;
         private IUserRepository _userRepository;
 
-        private void Configure()
+        protected override void ConfigureServices(IServiceCollection serviceCollection)
         {
-            LambdaLogger.Log("Configure Starts");
-            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
-            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
-            _configuration = new ConfigurationService().GetConfiguration();
+            var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
 
+            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+            serviceCollection.AddScoped<IUserRepository, UserRepository>();
+            serviceCollection.AddScoped<SomeUserDomainService>();
+        }
+
+        protected override void Configure(IServiceProvider serviceProvider)
+        {
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
-            LambdaLogger.Log("Configure after injection");
-            LambdaLogger.Log("_unitOfWork:" + (_unitOfWork == null).ToString());
-            LambdaLogger.Log("_userRepository:" + (_userRepository == null).ToString());
         }
 
         public DeleteUserFunction()
@@ -51,26 +49,12 @@ namespace UserService.Functions
         public DeleteUserFunction(
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
-            IUserRepository userRepository)
+            IUserRepository userRepository) : base(configuration)
         {
-            RunningAsLocal = true;
-
-            _configuration = configuration;
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
         }
 
-
-        private void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            var connString = _configuration["UserServiceDbContextConnectionString"];
-
-            serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
-
-            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
-            serviceCollection.AddScoped<IUserRepository, UserRepository>();
-            serviceCollection.AddScoped<SomeUserDomainService>();
-        }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request,
             ILambdaContext context)
@@ -79,7 +63,7 @@ namespace UserService.Functions
             LambdaLogger.Log($"CONTEXT {Serialize(context.GetMainProperties())}");
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
             if (!RunningAsLocal)
-                Configure();
+                ConfigureDependencies();
 
             LambdaLogger.Log("Path " + request.PathParameters["userid"]);
             var userId = Guid.Parse(request.PathParameters["userid"]);
@@ -91,13 +75,7 @@ namespace UserService.Functions
             _userRepository.Delete(user);
             _unitOfWork.SaveChanges(); //todo: dispose required because of how Lambda works
 
-            var response = new APIGatewayHttpApiV2ProxyResponse
-            {
-                StatusCode = (int) HttpStatusCode.NoContent,
-                Headers = new Dictionary<string, string> {{"Content-Type", "application/json"}}
-            };
-
-            return response;
+            return NoContent();
         }
     }
 }

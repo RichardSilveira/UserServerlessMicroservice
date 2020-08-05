@@ -1,27 +1,31 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using UserService.Configuration;
 
 namespace UserService
 {
-    public class ConfigurationService : IConfigurationService
+    public class ConfigurationService
     {
-        private readonly IEnvironmentService _environmentService;
-        private readonly IConfiguration _configuration;
+        private readonly EnvironmentService _environmentService;
+        public IConfiguration Configuration { get; private set; }
 
-        public ConfigurationService()
+        private static readonly Lazy<ConfigurationService> _instance =
+            new Lazy<ConfigurationService>(() => new ConfigurationService());
+
+        public static ConfigurationService Instance => _instance.Value;
+
+        private ConfigurationService()
         {
             _environmentService = new EnvironmentService();
-            _configuration = BuildConfiguration();
+            Configuration = BuildConfiguration();
+
+            IConfiguration BuildConfiguration() => new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{_environmentService.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
         }
-
-        public IConfiguration GetConfiguration() => _configuration;
-
-        private IConfiguration BuildConfiguration() => new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{_environmentService.EnvironmentName}.json", optional: true)
-            .AddEnvironmentVariables()
-            .Build();
     }
 }

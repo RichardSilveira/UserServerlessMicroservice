@@ -9,7 +9,7 @@ namespace UserService.Configuration
     /// Plus there is no ASP.Core runtime - to work with you need to use other approach with Amazon.Lambda.AspNetCoreServer.
     ///  https://aws.amazon.com/pt/blogs/developer/running-serverless-asp-net-core-web-apis-with-amazon-lambda/
     /// </summary>
-    public class EnvironmentService : IEnvironmentService
+    public class EnvironmentService
     {
         public EnvironmentService() =>
             EnvironmentName = Environment.GetEnvironmentVariable(Constants.EnvironmentVariables.Stage);
