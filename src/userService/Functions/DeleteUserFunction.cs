@@ -29,7 +29,6 @@ namespace UserService.Functions
 
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
-            serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
         protected override void Configure(IServiceProvider serviceProvider)

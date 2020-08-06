@@ -27,5 +27,13 @@ namespace UserService
                 .AddEnvironmentVariables()
                 .Build();
         }
+
+        public static IConfiguration BuildConfigurationForTests(string environmentName) =>
+            new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environmentName}.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
     }
 }

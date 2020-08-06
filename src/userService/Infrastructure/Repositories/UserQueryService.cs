@@ -16,20 +16,23 @@ namespace UserService.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<User>> GetUsersByEmail(string email, Guid? ignoredId)
+        public async Task<IEnumerable<User>> GetUsersByEmail(string email)
         {
-            var query = _context.Set<User>().AsNoTracking().Where(x =>
-                string.Equals(x.Email.ToUpper(), email.ToUpper(), StringComparison.InvariantCultureIgnoreCase));
+            var users = from u in _context.Users.AsNoTracking()
+                where u.Email == email
+                select u;
 
-            if (ignoredId.HasValue)
-                query = query.Where(x => x.Id != ignoredId);
-
-            return await query.ToListAsync();
+            return await users.ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByUser(Guid userId)
+        public async Task<IEnumerable<Order>> GetInShippingOrdersToUser(Guid userId)
         {
-            throw new NotImplementedException();
+            var orders = from o in _context.Orders
+                where o.UserId == userId && o.Status == OrderStatus.InShipping
+                orderby o.OrderDate
+                select o;
+
+            return await orders.ToListAsync();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -23,8 +24,8 @@ namespace UserService.Functions
     {
         private IUnitOfWork _unitOfWork;
         private IUserRepository _userRepository;
+        private IUserQueryService _userQueryService;
 
-        private SomeUserDomainService _userDomainService;
 
         protected override void ConfigureServices(IServiceCollection serviceCollection)
         {
@@ -34,14 +35,14 @@ namespace UserService.Functions
 
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
-            serviceCollection.AddScoped<SomeUserDomainService>();
+            serviceCollection.AddScoped<IUserQueryService, UserQueryService>();
         }
 
         protected override void Configure(IServiceProvider serviceProvider)
         {
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
-            _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
+            _userQueryService = serviceProvider.GetService<IUserQueryService>();
         }
 
         // Parameterless constructor required by AWS Lambda runtime 
@@ -54,12 +55,12 @@ namespace UserService.Functions
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
             IUserRepository userRepository,
-            SomeUserDomainService userDomainService) : base(configuration)
+            IUserQueryService userQueryService) : base(configuration)
         {
             // Constructor used by tests
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
-            _userDomainService = userDomainService;
+            _userQueryService = userQueryService;
         }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
@@ -87,19 +88,31 @@ namespace UserService.Functions
 
             user.UpdatePersonalInfo(userReq.FirstName, userReq.LastName);
 
+            var inShippingOrders = await _userQueryService.GetInShippingOrdersToUser(user.Id);
+
+
             if (userReq.Address != null)
             {
                 var userAddressReq = userReq.Address;
 
                 var userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City, userAddressReq.State);
 
+                if (inShippingOrders.Any())
+                    return BadRequest(ModelFailure.BuildModelFailure<User>(p => p.Address,
+                        "You cannot change your address because there is a shipping in progress already."));
+
                 user.UpdateAddress(userAddress);
                 //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well) (checking internally)
             }
             else
+            {
+                // All those bussines process could be moved to an UserDomainService, but it's not wrong do it in this way in favor of simplicity 
+                if (inShippingOrders.Any())
+                    return BadRequest(ModelFailure.BuildModelFailure<User>(p => p.Address,
+                        "You cannot remove your address because there is a shipping in progress already."));
+
                 user.RemoveAddress();
-            //todo: me way have a shipping associated with the user, then his address can't be removed. (domain service)
-            // if denied by domain service, return badrequest and dont dispatch all list of events.
+            }
 
             _userRepository.Update(user);
             _unitOfWork.SaveChanges();

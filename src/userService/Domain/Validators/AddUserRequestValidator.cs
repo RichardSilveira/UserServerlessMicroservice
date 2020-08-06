@@ -18,8 +18,8 @@ namespace UserService.Domain.Validators
                 .Length(3, 200).WithMessage("The Last Name must have between 2 and 150 characters");
 
             RuleFor(p => p.Email)
-                .NotEmpty()
-                .EmailAddress();
+                .NotEmpty().WithMessage("Please enter the E-mail")
+                .EmailAddress().WithMessage("Please inform a valid e-mail address");
 
             RuleFor(p => p.Address).SetValidator(new AddressValidator());
         }

@@ -1,10 +1,13 @@
 ﻿namespace UserService.Domain
 {
+    /// <summary>
+    /// All the relevant Order Status for the context of the User Bounded Context 
+    /// </summary>
     public enum OrderStatus
     {
-        InProgress,
         Active,
-        Done,
+        InShipping,
+        Delivered,
         Cancelled
     }
 }

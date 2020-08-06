@@ -1,7 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Text.Json;
@@ -23,43 +20,41 @@ using Xunit;
 
 namespace UserServiceTests
 {
-    public class AddNewUserFunctionTest
+    public class IntegrationTests
     {
+        private IConfiguration _configuration;
+
         [Fact]
-        public async Task AddNewValidUser_Should_Returns_Created()
+        public async Task AddNewUser_Via_LocalMySql()
         {
-            var configuration = ConfigurationService.BuildConfigurationForTests("test");
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
             var addUserRequest = new AddUserRequest()
             {
-                FirstName = "Julia",
+                FirstName = "John",
                 LastName = "Doe",
-                Email = "newvalidemail@email.com",
                 Address = new AddressRequest()
                 {
-                    Country = "Brazil",
-                    Street = "Flower St."
+                    Country = "Argentina",
+                    Street = "Buenos Aires"
                 }
             };
 
             proxy.Body = JsonSerializer.Serialize(addUserRequest);
 
-            var unitOfWork = new UnitOfWorkInMemory();
-            var userRepository = new UserRepositoryInMemory();
+            var optionsBuilder = new DbContextOptionsBuilder<UserServiceDbContext>();
+            optionsBuilder.UseMySql(
+                _configuration["UserServiceDbContextConnectionString"]);
 
-            var userQueryServiceMock = new Mock<IUserQueryService>();
-            userQueryServiceMock.Setup(p => p.GetUsersByEmail("newvalidemail@email.com")).Returns(Task.FromResult<IEnumerable<User>>(null));
+            var localMySqlDbCtxt = new UserServiceDbContext(optionsBuilder.Options);
 
-            var function = new AddNewUserFunction(configuration, unitOfWork, userRepository, userQueryServiceMock.Object);
-
+            var userRepository = new UserRepository(localMySqlDbCtxt);
+            var userQueryService = new UserQueryService(localMySqlDbCtxt);
+            var unitOfWork = new UnitOfWork(localMySqlDbCtxt);
+            var function = new AddNewUserFunction(_configuration, unitOfWork, userRepository, userQueryService);
             var result = await function.Handle(proxy, new TestLambdaContext());
 
             Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
-        }
-
-        public async Task AddUser_EmailAlreadyExists_Should_Returns_BadRequest()
-        {
         }
     }
 }

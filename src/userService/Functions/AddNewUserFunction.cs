@@ -30,9 +30,6 @@ namespace UserService.Functions
         private IUserRepository _userRepository;
         private IUserQueryService _userQueryService;
 
-        private SomeUserDomainService _userDomainService;
-
-
         protected override void ConfigureServices(IServiceCollection serviceCollection)
         {
             var connString = Configuration["UserServiceDbContextConnectionString"];
@@ -42,14 +39,12 @@ namespace UserService.Functions
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<IUserQueryService, UserQueryService>();
-            serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
         protected override void Configure(IServiceProvider serviceProvider)
         {
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
-            _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
             _userQueryService = serviceProvider.GetService<IUserQueryService>();
         }
 
@@ -62,13 +57,12 @@ namespace UserService.Functions
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
             IUserRepository userRepository,
-            SomeUserDomainService userDomainService) : base(configuration)
+            IUserQueryService userQueryService) : base(configuration)
         {
-            //todo: _userQueryService
             // Constructor used by tests
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
-            _userDomainService = userDomainService;
+            _userQueryService = userQueryService;
         }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
@@ -85,10 +79,10 @@ namespace UserService.Functions
             if (!userValidationResult.IsValid)
                 return BadRequest(userValidationResult.Errors.ToModelFailures());
 
-
-            var usersByEmail = await _userQueryService.GetUsersByEmail(userReq.Email);
-
-            if (!usersByEmail.Any())
+            // We could work with UserDomainService as well, but there is no need to introduce it every time, Lambda works in favor of simplicity
+            // Doing this way, we have a code not so good in terms of testability, but simplest. (by example, we'll need to do mocks)
+            var users = await _userQueryService.GetUsersByEmail(userReq.Email);
+            if (users.Any())
                 return BadRequest(ModelFailure.BuildModelFailure<User>(p => p.Email, "The E-mail already exists."));
 
             var user = new User(userReq.FirstName, userReq.LastName, userReq.Email);
