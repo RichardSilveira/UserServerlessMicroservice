@@ -5,9 +5,9 @@ namespace UserService.Infrastructure.Repositories.Transactions
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly UserServiceDbContext _context;
+        private readonly UserContext _context;
 
-        public UnitOfWork(UserServiceDbContext context)
+        public UnitOfWork(UserContext context)
         {
             _context = context;
         }

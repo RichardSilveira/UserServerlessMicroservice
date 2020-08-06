@@ -9,9 +9,9 @@ namespace UserService.Infrastructure.Repositories
 {
     public class UserQueryService : IUserQueryService
     {
-        private readonly UserServiceDbContext _context;
+        private readonly UserContext _context;
 
-        public UserQueryService(UserServiceDbContext context)
+        public UserQueryService(UserContext context)
         {
             _context = context;
         }
@@ -29,7 +29,6 @@ namespace UserService.Infrastructure.Repositories
         {
             var orders = from o in _context.Orders
                 where o.UserId == userId && o.Status == OrderStatus.InShipping
-                orderby o.OrderDate
                 select o;
 
             return await orders.ToListAsync();

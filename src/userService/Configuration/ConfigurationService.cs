@@ -28,7 +28,7 @@ namespace UserService
                 .Build();
         }
 
-        public static IConfiguration BuildConfigurationForTests(string environmentName) =>
+        public static IConfiguration BuildConfiguration(string environmentName) =>
             new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)

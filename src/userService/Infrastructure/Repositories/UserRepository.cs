@@ -11,7 +11,7 @@ namespace UserService.Infrastructure.Repositories
 {
     public class UserRepository : EFCRUDRepositoryBase<User, Guid>, IUserRepository
     {
-        public UserRepository(UserServiceDbContext context) : base(context)
+        public UserRepository(UserContext context) : base(context)
         {
         }
     }

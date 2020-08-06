@@ -42,11 +42,11 @@ namespace UserServiceTests
 
             proxy.Body = JsonSerializer.Serialize(addUserRequest);
 
-            var optionsBuilder = new DbContextOptionsBuilder<UserServiceDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<UserContext>();
             optionsBuilder.UseMySql(
                 _configuration["UserServiceDbContextConnectionString"]);
 
-            var localMySqlDbCtxt = new UserServiceDbContext(optionsBuilder.Options);
+            var localMySqlDbCtxt = new UserContext(optionsBuilder.Options);
 
             var userRepository = new UserRepository(localMySqlDbCtxt);
             var userQueryService = new UserQueryService(localMySqlDbCtxt);

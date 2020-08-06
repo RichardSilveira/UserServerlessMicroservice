@@ -10,8 +10,6 @@ namespace UserService.Domain
     {
         public OrderStatus Status { get; private set; }
 
-        public DateTimeOffset OrderDate { get; private set; }
-
         public Guid UserId { get; private set; }
     }
 }

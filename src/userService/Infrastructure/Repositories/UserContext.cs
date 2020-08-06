@@ -4,12 +4,12 @@ using UserService.Infrastructure.Repositories.Mappings;
 
 namespace UserService.Infrastructure.Repositories
 {
-    public class UserServiceDbContext : DbContext
+    public class UserContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; }
 
-        public UserServiceDbContext(DbContextOptions options) : base(options)
+        public UserContext(DbContextOptions options) : base(options)
         {
         }
 

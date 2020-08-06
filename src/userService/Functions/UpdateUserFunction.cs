@@ -31,7 +31,7 @@ namespace UserService.Functions
         {
             var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            serviceCollection.AddDbContext<UserServiceDbContext>(options => options.UseMySql(connString));
+            serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
 
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();

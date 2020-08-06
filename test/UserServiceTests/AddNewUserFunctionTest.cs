@@ -28,7 +28,7 @@ namespace UserServiceTests
         [Fact]
         public async Task AddNewValidUser_Should_Returns_Created()
         {
-            var configuration = ConfigurationService.BuildConfigurationForTests("test");
+            var configuration = ConfigurationService.BuildConfiguration("test");
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
             var addUserRequest = new AddUserRequest()
