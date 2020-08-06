@@ -26,12 +26,7 @@ namespace UserServiceTests.Infrastructure
 
         public Task<User> GetById(Guid Id)
         {
-            return Task.FromResult<User>(new User("Lorem", "Ipsum"));
-        }
-
-        public Task<IEnumerable<User>> GetAll()
-        {
-            throw new NotImplementedException();
+            return Task.FromResult<User>(new User("Lorem", "Ipsum", "email@email.com"));
         }
     }
 }

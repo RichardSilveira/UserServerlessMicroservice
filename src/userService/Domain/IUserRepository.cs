@@ -14,7 +14,5 @@ namespace UserService.Domain
         void Delete(User entity);
 
         Task<User> GetById(Guid Id);
-
-        Task<IEnumerable<User>> GetAll();
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace UserService.Functions
     {
         private IUnitOfWork _unitOfWork;
         private IUserRepository _userRepository;
+        private IUserQueryService _userQueryService;
 
         private SomeUserDomainService _userDomainService;
 
@@ -39,6 +41,7 @@ namespace UserService.Functions
 
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
+            serviceCollection.AddScoped<IUserQueryService, UserQueryService>();
             serviceCollection.AddScoped<SomeUserDomainService>();
         }
 
@@ -47,6 +50,7 @@ namespace UserService.Functions
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
             _userDomainService = serviceProvider.GetService<SomeUserDomainService>();
+            _userQueryService = serviceProvider.GetService<IUserQueryService>();
         }
 
         // Parameterless constructor required by AWS Lambda runtime 
@@ -60,13 +64,14 @@ namespace UserService.Functions
             IUserRepository userRepository,
             SomeUserDomainService userDomainService) : base(configuration)
         {
+            //todo: _userQueryService
             // Constructor used by tests
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _userDomainService = userDomainService;
         }
 
-        public APIGatewayHttpApiV2ProxyResponse Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
+        public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
         {
             LogFunctionMetadata(request, context);
 
@@ -81,7 +86,12 @@ namespace UserService.Functions
                 return BadRequest(userValidationResult.Errors.ToModelFailures());
 
 
-            var user = new User(userReq.FirstName, userReq.LastName);
+            var usersByEmail = await _userQueryService.GetUsersByEmail(userReq.Email, Guid.Empty); //todo: remove from here
+
+            if (usersByEmail.Any())
+                return BadRequest(new ModelFailure("email", "The E-mail already exists."));
+
+            var user = new User(userReq.FirstName, userReq.LastName, userReq.Email);
 
             if (userReq.Address != null)
             {

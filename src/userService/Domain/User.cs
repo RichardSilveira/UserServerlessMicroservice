@@ -7,16 +7,17 @@ namespace UserService.Domain
 {
     public class User : Entity
     {
-        //todo: Add email and handle with uniqueness issue
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
+        public string Email { get; set; }
 
         public Address Address { get; private set; }
 
-        public User(string firstName, string lastName)
+        public User(string firstName, string lastName, string email)
         {
             FirstName = firstName;
             LastName = lastName;
+            Email = email;
         }
 
         public void UpdateAddress(Address address) => Address = address;
@@ -26,6 +27,7 @@ namespace UserService.Domain
         {
             FirstName = firstName;
             LastName = lastName;
+            // We don't allow email update at this sample
         }
     }
 }

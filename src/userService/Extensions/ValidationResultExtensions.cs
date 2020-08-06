@@ -27,6 +27,7 @@ namespace UserService.Extensions
         {
             PropertyName = propertyName;
             ErrorMessage = errorMessage;
+            //todo: Propertyname as expression
         }
     }
 }

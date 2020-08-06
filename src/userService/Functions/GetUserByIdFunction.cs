@@ -56,8 +56,6 @@ namespace UserService.Functions
 
             var userId = Guid.Parse(request.PathParameters["userid"]);
 
-            // Could apply some logic here to approve the user deletion
-
             var user = await _userRepository.GetById(userId);
             if (user == null) return NotFound();
 

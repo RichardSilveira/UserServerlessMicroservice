@@ -165,5 +165,16 @@ namespace UserService.Functions
                     {"Content-Type", "application/json"}
                 }
             };
+        
+        protected APIGatewayHttpApiV2ProxyResponse BadRequest(ModelFailure error) =>
+            new APIGatewayHttpApiV2ProxyResponse()
+            {
+                StatusCode = (int) HttpStatusCode.BadRequest,
+                Body = Serialize(error),
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"}
+                }
+            };
     }
 }
