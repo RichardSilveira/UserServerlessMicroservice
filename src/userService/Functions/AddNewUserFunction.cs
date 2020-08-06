@@ -86,10 +86,10 @@ namespace UserService.Functions
                 return BadRequest(userValidationResult.Errors.ToModelFailures());
 
 
-            var usersByEmail = await _userQueryService.GetUsersByEmail(userReq.Email, Guid.Empty); //todo: remove from here
+            var usersByEmail = await _userQueryService.GetUsersByEmail(userReq.Email);
 
-            if (usersByEmail.Any())
-                return BadRequest(new ModelFailure("email", "The E-mail already exists."));
+            if (!usersByEmail.Any())
+                return BadRequest(ModelFailure.BuildModelFailure<User>(p => p.Email, "The E-mail already exists."));
 
             var user = new User(userReq.FirstName, userReq.LastName, userReq.Email);
 

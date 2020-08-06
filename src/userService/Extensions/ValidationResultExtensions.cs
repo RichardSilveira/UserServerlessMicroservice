@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using FluentValidation.Results;
 
 namespace UserService.Extensions
@@ -23,11 +25,22 @@ namespace UserService.Extensions
         public string PropertyName { get; set; }
         public string ErrorMessage { get; set; }
 
+        public ModelFailure()
+        {
+        }
+
         public ModelFailure(string propertyName, string errorMessage)
         {
             PropertyName = propertyName;
             ErrorMessage = errorMessage;
             //todo: Propertyname as expression
         }
+
+        public static ModelFailure BuildModelFailure<T>(Expression<Func<T, object>> property, string errorMessage) =>
+            new ModelFailure()
+            {
+                PropertyName = ((MemberExpression) property.Body).Member.Name,
+                ErrorMessage = errorMessage
+            };
     }
 }

@@ -7,7 +7,7 @@ namespace UserServiceTests.Infrastructure
 {
     public class UserQueryServiceInMemory : IUserQueryService
     {
-        public Task<IEnumerable<User>> GetUsersByEmail(string email, Guid ignoredId)
+        public Task<IEnumerable<User>> GetUsersByEmail(string email, Guid? ignoredId)
         {
             throw new NotImplementedException();
         }

@@ -93,8 +93,8 @@ namespace UserService.Functions
 
                 var userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City, userAddressReq.State);
 
-                user.UpdateAddress(
-                    userAddress); //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well) (checking internally)
+                user.UpdateAddress(userAddress);
+                //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well) (checking internally)
             }
             else
                 user.RemoveAddress();

@@ -6,6 +6,6 @@ namespace UserService.Domain
 {
     public interface IUserQueryService
     {
-        public Task<IEnumerable<User>> GetUsersByEmail(string email, Guid ignoredId);
+        public Task<IEnumerable<User>> GetUsersByEmail(string email, Guid? ignoredId = null);
     }
 }
