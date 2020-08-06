@@ -28,7 +28,7 @@ namespace UserServiceTests
         [Fact]
         public async Task AddNewValidUser_Should_Returns_Created()
         {
-            var configuration = ConfigurationService.BuildConfiguration("test");
+            var configuration = ConfigurationService.BuildConfiguration("local");
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
             var addUserRequest = new AddUserRequest()
@@ -58,8 +58,44 @@ namespace UserServiceTests
             Assert.True(result.StatusCode == (int) HttpStatusCode.Created);
         }
 
+        [Fact]
         public async Task AddUser_EmailAlreadyExists_Should_Returns_BadRequest()
         {
+            await Task.CompletedTask;
         }
+
+        [Fact]
+        public async Task If_Address_Is_Informed_Should_Contains_Country()
+        {
+            await Task.CompletedTask;
+        }
+
+        #region Validations against required fields
+
+        [Fact]
+        public async Task AddUser_WithoutEmail_Should_Returns_BadRequest()
+        {
+            await Task.CompletedTask;
+        }
+
+        [Fact]
+        public async Task AddUser_WithoutFirstName_Should_Returns_BadRequest()
+        {
+            await Task.CompletedTask;
+        }
+
+        [Fact]
+        public async Task AddUser_WithoutLastName_Should_Returns_BadRequest()
+        {
+            await Task.CompletedTask;
+        }
+
+        #endregion
+
+        #region Validations againts domain events
+
+        //todo: 
+
+        #endregion
     }
 }

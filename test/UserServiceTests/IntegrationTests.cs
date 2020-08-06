@@ -22,17 +22,18 @@ namespace UserServiceTests
 {
     public class IntegrationTests
     {
-        private IConfiguration _configuration;
-
         [Fact]
         public async Task AddNewUser_Via_LocalMySql()
         {
+            var configuration = ConfigurationService.BuildConfiguration("local");
+
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
             var addUserRequest = new AddUserRequest()
             {
                 FirstName = "John",
                 LastName = "Doe",
+                Email = "newvalidemail@email.com",
                 Address = new AddressRequest()
                 {
                     Country = "Argentina",
@@ -43,15 +44,16 @@ namespace UserServiceTests
             proxy.Body = JsonSerializer.Serialize(addUserRequest);
 
             var optionsBuilder = new DbContextOptionsBuilder<UserContext>();
-            optionsBuilder.UseMySql(
-                _configuration["UserServiceDbContextConnectionString"]);
+            optionsBuilder.UseMySql(configuration["UserServiceDbContextConnectionString"]);
 
             var localMySqlDbCtxt = new UserContext(optionsBuilder.Options);
 
             var userRepository = new UserRepository(localMySqlDbCtxt);
             var userQueryService = new UserQueryService(localMySqlDbCtxt);
             var unitOfWork = new UnitOfWork(localMySqlDbCtxt);
-            var function = new AddNewUserFunction(_configuration, unitOfWork, userRepository, userQueryService);
+
+            var function = new AddNewUserFunction(configuration, unitOfWork, userRepository, userQueryService);
+
             var result = await function.Handle(proxy, new TestLambdaContext());
 
             Assert.True(result.StatusCode == (int) HttpStatusCode.Created);

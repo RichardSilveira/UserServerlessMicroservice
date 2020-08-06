@@ -27,7 +27,7 @@ namespace UserService.Infrastructure.Repositories
 
         public async Task<IEnumerable<Order>> GetInShippingOrdersToUser(Guid userId)
         {
-            var orders = from o in _context.Orders
+            var orders = from o in _context.Orders.AsNoTracking()
                 where o.UserId == userId && o.Status == OrderStatus.InShipping
                 select o;
 
