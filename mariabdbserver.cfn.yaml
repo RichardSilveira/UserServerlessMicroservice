@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: | 
+  Deploy a MariaDB Server based on AWS Marketplace AMI "MariaDB Server 10.3 on AmazonLinux" for DEVELOPMENT ONLY
+Parameters:
+  ServerKeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Your Amazon EC2 Key Pair.
+
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+    Description: Choose which VPC all the resources should be deployed to.
+
+  PublicSubnetId:
+    Description: Choose which public subnet all the resources should be deployed to.
+    Type: AWS::EC2::Subnet::Id
+  
+  SSHEnabledSourceIp:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: Source IP CIDR Block (eg 10.0.0.0/16) that will be allowed to do SSH requests into the Database EC2 Instance.
+    Type: String
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3a.nano
+      - t3a.micro
+      - t3a.small
+      - t3a.medium
+
+Mappings:
+  RegionArchToAMI:
+    us-east-1:
+      HVM64: ami-072f48603fb453582
+    us-east-2:
+      HVM64: ami-0f38ef5ae1f3d61b9
+    sa-east-1:
+      HVM64: ami-0310d00258b6a2859
+
+Resources:
+  MariaDbServerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Enable secure access to the DB server
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHEnabledSourceIp
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+     
+
+  MariaDbServer:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId: !FindInMap [ RegionArchToAMI, !Ref "AWS::Region", HVM64 ]
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref ServerKeyPair
+      SubnetId: !Ref PublicSubnetId
+      SecurityGroupIds:
+        - !Ref MariaDbServerSecurityGroup
+      UserData: !Base64 |
+        #!/bin/bash -xe
+        yum update -y
+
+Outputs:
+  PublicDnsName:
+    Value: !GetAtt [MariaDbServer, PublicDnsName]
+    Description: |
+      MariaDB Server Public IP that can must be used at connection string.
+      Connect EC2 using the username  'ec2-user' and get MariaDB's credentials by command 'cat /credentials/password.txt', 
+      then access the GUI tool phpMyAdmin via web browser at http://Public_DNS:9090 and manage the MariaDB by yourself
+
+
+  
+  
