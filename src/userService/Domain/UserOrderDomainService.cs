@@ -13,7 +13,7 @@ namespace UserService.Domain
             _orderQueryService = orderQueryService;
         }
 
-        public async Task<(bool IsValid, string ReasonPhrase)> CanUpdateUserAddress(User user)
+        public async Task<(bool IsValid, string ReasonPhrase)> CanUpdateAddressFromExistingUser(User user)
         {
             var inShippingOrders = await _orderQueryService.GetInShippingOrdersByUserAsync(user.Id);
 
@@ -25,11 +25,10 @@ namespace UserService.Domain
             return (true, "");
         }
 
-        public void UpdateUserAddress(User user, Address newAddress)
+        public void UpdateAddressFromExistingUser(User user, Address newAddress)
         {
             if (newAddress != null)
-                user.UpdateAddress(
-                    newAddress); //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well) (checking internally)
+                user.UpdateAddress(newAddress);
             else
                 user.RemoveAddress();
         }

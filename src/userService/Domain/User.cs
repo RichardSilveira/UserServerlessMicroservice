@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using UserService.Domain.Events;
-using UserService.Functions;
+﻿using UserService.Domain.Events;
 using UserService.SharedKernel;
 
 namespace UserService.Domain
@@ -13,7 +9,7 @@ namespace UserService.Domain
         public string LastName { get; private set; }
         public string Email { get; private set; }
         public Address Address { get; private set; }
-        
+
         public User(string firstName, string lastName, string email)
         {
             FirstName = firstName;

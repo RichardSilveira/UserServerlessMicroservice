@@ -95,11 +95,11 @@ namespace UserService.Functions
                 userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City, userAddressReq.State);
             }
 
-            var result = await _userOrderService.CanUpdateUserAddress(user);
+            var result = await _userOrderService.CanUpdateAddressFromExistingUser(user);
             if (!result.IsValid)
                 return BadRequest(result.ReasonPhrase);
 
-            _userOrderService.UpdateUserAddress(user, userAddress);
+            _userOrderService.UpdateAddressFromExistingUser(user, userAddress);
 
             _userRepository.Update(user);
             _unitOfWork.SaveChanges();
