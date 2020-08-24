@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,7 @@ using UserService.Configuration;
 using UserService.Domain;
 using UserService.Domain.Requests;
 using UserService.Domain.Validators;
+using UserService.EventHandlers.UserRegistered;
 using UserService.Extensions;
 using UserService.Infrastructure.Repositories;
 using UserService.Infrastructure.Repositories.Transactions;
@@ -39,6 +42,8 @@ namespace UserService.Functions
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<IUserQueryService, UserQueryService>();
+
+            serviceCollection.AddMediatR(Assembly.GetExecutingAssembly());
         }
 
         protected override void Configure(IServiceProvider serviceProvider)
@@ -98,8 +103,8 @@ namespace UserService.Functions
             }
 
             _userRepository.Add(user);
-            _unitOfWork.SaveChanges();
-            _unitOfWork.Dispose(); // Sounds good dispose explicitly because of the Lambda "nature"
+            await _unitOfWork.SaveChangesAsync(); // Sometimes is better not to wait for the Completion of your event handlers because of the Lambda "nature". 
+            _unitOfWork.Dispose(); // Sounds good dispose explicitly because of the Lambda "nature".
 
 
             return Created(user, options =>

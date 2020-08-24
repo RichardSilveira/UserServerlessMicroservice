@@ -20,6 +20,6 @@ namespace UserService.SharedKernel
 
         public void AddDomainEvent(INotification eventItem) => _domainEvents.Add(eventItem);
 
-        public void RemoveDomainEvent(INotification eventItem) => _domainEvents.Remove(eventItem);
+        public void ClearDomainEvents() => _domainEvents.Clear();
     }
 }

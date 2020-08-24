@@ -9,6 +9,11 @@ namespace UserServiceTests.Infrastructure
         {
         }
 
+        public Task SaveChangesAsync()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public void Dispose()
         {
         }
