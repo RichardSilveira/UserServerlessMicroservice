@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 
 namespace UserService.Domain
 {
-    public interface IUserQueryService
+    public interface IOrderQueryService
     {
-        public Task<IEnumerable<User>> GetUsersByEmail(string email);
+        Task<IEnumerable<Order>> GetInShippingOrdersByUserAsync(Guid userId);
     }
 }

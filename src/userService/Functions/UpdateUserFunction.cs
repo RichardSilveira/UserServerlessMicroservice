@@ -24,8 +24,7 @@ namespace UserService.Functions
     {
         private IUnitOfWork _unitOfWork;
         private IUserRepository _userRepository;
-        private IUserQueryService _userQueryService;
-
+        private UserOrderDomainService _userOrderService;
 
         protected override void ConfigureServices(IServiceCollection serviceCollection)
         {
@@ -42,7 +41,7 @@ namespace UserService.Functions
         {
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _userRepository = serviceProvider.GetService<IUserRepository>();
-            _userQueryService = serviceProvider.GetService<IUserQueryService>();
+            _userOrderService = serviceProvider.GetService<UserOrderDomainService>();
         }
 
         // Parameterless constructor required by AWS Lambda runtime 
@@ -55,12 +54,13 @@ namespace UserService.Functions
             IConfiguration configuration,
             IUnitOfWork unitOfWork,
             IUserRepository userRepository,
-            IUserQueryService userQueryService) : base(configuration)
+            UserOrderDomainService userOrderService) : base(configuration)
         {
             // Constructor used by tests
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
-            _userQueryService = userQueryService;
+            _userOrderService = userOrderService;
+            _userOrderService = userOrderService;
         }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
@@ -88,31 +88,18 @@ namespace UserService.Functions
 
             user.UpdatePersonalInfo(userReq.FirstName, userReq.LastName);
 
-            var inShippingOrders = await _userQueryService.GetInShippingOrdersToUser(user.Id);
-
-
+            Address userAddress = null;
             if (userReq.Address != null)
             {
                 var userAddressReq = userReq.Address;
-
-                var userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City, userAddressReq.State);
-
-                if (inShippingOrders.Any())
-                    return BadRequest(ModelFailure.BuildModelFailure<User>(p => p.Address,
-                        "You cannot change your address because there is a shipping in progress already."));
-
-                user.UpdateAddress(userAddress);
-                //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well) (checking internally)
+                userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City, userAddressReq.State);
             }
-            else
-            {
-                // All those bussines process could be moved to an UserDomainService, but it's not wrong do it in this way in favor of simplicity 
-                if (inShippingOrders.Any())
-                    return BadRequest(ModelFailure.BuildModelFailure<User>(p => p.Address,
-                        "You cannot remove your address because there is a shipping in progress already."));
 
-                user.RemoveAddress();
-            }
+            var result = await _userOrderService.CanUpdateUserAddress(user);
+            if (!result.IsValid)
+                return BadRequest(result.ReasonPhrase);
+
+            _userOrderService.UpdateUserAddress(user, userAddress);
 
             _userRepository.Update(user);
             _unitOfWork.SaveChanges();
