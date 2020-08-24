@@ -83,7 +83,7 @@ namespace UserService.Functions
             if (!userValidationResult.IsValid)
                 return BadRequest(userValidationResult.Errors.ToModelFailures());
 
-            var user = await _userRepository.GetById(Guid.Parse(userId));
+            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
             if (user == null) return NotFound();
 
             user.UpdatePersonalInfo(userReq.FirstName, userReq.LastName);

@@ -24,14 +24,5 @@ namespace UserService.Infrastructure.Repositories
 
             return await users.ToListAsync();
         }
-
-        public async Task<IEnumerable<Order>> GetInShippingOrdersToUser(Guid userId)
-        {
-            var orders = from o in _context.Orders.AsNoTracking()
-                where o.UserId == userId && o.Status == OrderStatus.InShipping
-                select o;
-
-            return await orders.ToListAsync();
-        }
     }
 }

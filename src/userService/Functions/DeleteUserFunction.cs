@@ -64,7 +64,7 @@ namespace UserService.Functions
             if (userId == Guid.Empty)
                 return BadRequest("You must inform the user Id");
 
-            var user = await _userRepository.GetById(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return NotFound();
 
             _userRepository.Delete(user);

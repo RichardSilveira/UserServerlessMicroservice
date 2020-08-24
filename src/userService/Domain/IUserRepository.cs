@@ -13,6 +13,6 @@ namespace UserService.Domain
 
         void Delete(User entity);
 
-        Task<User> GetById(Guid Id);
+        Task<User> GetByIdAsync(Guid Id);
     }
 }

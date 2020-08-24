@@ -56,7 +56,7 @@ namespace UserService.Functions
 
             var userId = Guid.Parse(request.PathParameters["userid"]);
 
-            var user = await _userRepository.GetById(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return NotFound();
 
             return Ok(user);

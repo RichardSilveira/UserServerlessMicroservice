@@ -24,7 +24,7 @@ namespace UserServiceTests.Infrastructure
             //TODO: Implemen it later
         }
 
-        public Task<User> GetById(Guid Id)
+        public Task<User> GetByIdAsync(Guid Id)
         {
             return Task.FromResult<User>(new User("Lorem", "Ipsum", "email@email.com"));
         }
