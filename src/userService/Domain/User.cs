@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using UserService.Domain.Events;
 using UserService.Functions;
 using UserService.SharedKernel;
 
 namespace UserService.Domain
 {
-    public class User : Entity
+    public class User : Entity, IAggregateRoot
     {
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
@@ -18,7 +19,10 @@ namespace UserService.Domain
             FirstName = firstName;
             LastName = lastName;
             Email = email;
+
+            AddDomainEvent(new UserRegisteredDomainEvent(Id, FirstName, LastName, Email));
         }
+
 
         public void UpdateAddress(Address address) => Address = address;
         public void RemoveAddress() => Address = null;

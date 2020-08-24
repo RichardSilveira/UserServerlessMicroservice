@@ -5,7 +5,7 @@ using UserService.SharedKernel;
 
 namespace UserService.Domain
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
         void Add(User entity);
 

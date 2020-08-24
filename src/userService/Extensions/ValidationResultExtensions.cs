@@ -33,7 +33,6 @@ namespace UserService.Extensions
         {
             PropertyName = propertyName;
             ErrorMessage = errorMessage;
-            //todo: Propertyname as expression
         }
 
         public static ModelFailure BuildModelFailure<T>(Expression<Func<T, object>> property, string errorMessage) =>
