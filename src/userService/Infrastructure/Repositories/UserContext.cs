@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using UserService.Domain;
 using UserService.Infrastructure.Repositories.Mappings;
 
@@ -18,6 +19,19 @@ namespace UserService.Infrastructure.Repositories
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfiguration(new UserMap());
+        }
+
+        public static class Factory
+        {
+            public static UserContext CreateNew(Action<DbContextOptionsBuilder<UserContext>> options)
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<UserContext>();
+
+                options?.Invoke(optionsBuilder);
+                var context = new UserContext(optionsBuilder.Options);
+
+                return context;
+            }
         }
     }
 }

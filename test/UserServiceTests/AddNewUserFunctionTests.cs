@@ -28,6 +28,7 @@ namespace UserServiceTests
         [Fact]
         public async Task AddNewValidUser_Should_Returns_Created()
         {
+            // Arrange
             var configuration = ConfigurationService.BuildConfiguration("local");
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
 
@@ -59,13 +60,18 @@ namespace UserServiceTests
         }
 
         [Fact]
-        public async Task AddUser_EmailAlreadyExists_Should_Returns_BadRequest()
+        public async Task AddUser_Should_Returns_BadRequest_When_Email_AlreadyExists()
         {
             await Task.CompletedTask;
         }
 
         [Fact]
-        public async Task If_Address_Is_Informed_Should_Contains_Country()
+        public async Task AddUser_Should_Contains_Country_When_Address_Is_Informed()
+        {
+            await Task.CompletedTask;
+        }
+
+        public async Task AddUser_Succesfully_Should_Publish_UserRegisteredEvent()
         {
             await Task.CompletedTask;
         }
@@ -89,12 +95,6 @@ namespace UserServiceTests
         {
             await Task.CompletedTask;
         }
-
-        #endregion
-
-        #region Validations againts domain events
-
-        //todo: 
 
         #endregion
     }

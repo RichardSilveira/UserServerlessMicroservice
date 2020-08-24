@@ -20,20 +20,15 @@ namespace UserServiceTests
         [Fact]
         public async Task AddNew_ValidUser_Via_LocalMySql_Should_Returns_201Created()
         {
-            // Arange
+            // Arrange
             var configuration = ConfigurationService.BuildConfiguration("local");
 
-            var proxy = new APIGatewayHttpApiV2ProxyRequest();
+            var context = UserContext.Factory.CreateNew(options => options.UseMySql(configuration["UserServiceDbContextConnectionString"]));
+            UserContextInitializer.ClearDatabase(context);
 
-            var optionsBuilder = new DbContextOptionsBuilder<UserContext>();
-            optionsBuilder.UseMySql(configuration["UserServiceDbContextConnectionString"]);
-
-            var localMySqlDbCtxt = new UserContext(optionsBuilder.Options);
-            UserContextInitializer.ClearDatabase(localMySqlDbCtxt);
-
-            var userRepository = new UserRepository(localMySqlDbCtxt);
-            var userQueryService = new UserQueryService(localMySqlDbCtxt);
-            var unitOfWork = new UnitOfWork(localMySqlDbCtxt, new NoMediator());
+            var unitOfWork = new UnitOfWork(context, new NoMediator());
+            var userRepository = new UserRepository(context);
+            var userQueryService = new UserQueryService(context);
 
             var addUserRequest = new AddUserRequest()
             {
@@ -47,7 +42,10 @@ namespace UserServiceTests
                 }
             };
 
-            proxy.Body = JsonSerializer.Serialize(addUserRequest);
+            var proxy = new APIGatewayHttpApiV2ProxyRequest()
+            {
+                Body = JsonSerializer.Serialize(addUserRequest)
+            };
 
             // Act
             var function = new AddNewUserFunction(configuration, unitOfWork, userRepository, userQueryService);
