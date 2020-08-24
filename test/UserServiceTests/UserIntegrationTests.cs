@@ -1,16 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.TestUtilities;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Moq;
 using UserService;
-using UserService.Configuration;
-using UserService.Domain;
 using UserService.Domain.Requests;
 using UserService.Functions;
 using UserService.Infrastructure.Repositories;
@@ -20,14 +15,25 @@ using Xunit;
 
 namespace UserServiceTests
 {
-    public class IntegrationTests
+    public class UserIntegrationTests
     {
         [Fact]
-        public async Task AddNewUser_Via_LocalMySql()
+        public async Task AddNew_ValidUser_Via_LocalMySql_Should_Returns_201Created()
         {
-            /*var configuration = ConfigurationService.BuildConfiguration("local");
+            // Arange
+            var configuration = ConfigurationService.BuildConfiguration("local");
 
             var proxy = new APIGatewayHttpApiV2ProxyRequest();
+
+            var optionsBuilder = new DbContextOptionsBuilder<UserContext>();
+            optionsBuilder.UseMySql(configuration["UserServiceDbContextConnectionString"]);
+
+            var localMySqlDbCtxt = new UserContext(optionsBuilder.Options);
+            UserContextInitializer.ClearDatabase(localMySqlDbCtxt);
+
+            var userRepository = new UserRepository(localMySqlDbCtxt);
+            var userQueryService = new UserQueryService(localMySqlDbCtxt);
+            var unitOfWork = new UnitOfWork(localMySqlDbCtxt, new NoMediator());
 
             var addUserRequest = new AddUserRequest()
             {
@@ -43,20 +49,12 @@ namespace UserServiceTests
 
             proxy.Body = JsonSerializer.Serialize(addUserRequest);
 
-            var optionsBuilder = new DbContextOptionsBuilder<UserContext>();
-            optionsBuilder.UseMySql(configuration["UserServiceDbContextConnectionString"]);
-
-            var localMySqlDbCtxt = new UserContext(optionsBuilder.Options);
-
-            var userRepository = new UserRepository(localMySqlDbCtxt);
-            var userQueryService = new UserQueryService(localMySqlDbCtxt);
-            var unitOfWork = new UnitOfWork(localMySqlDbCtxt);
-
+            // Act
             var function = new AddNewUserFunction(configuration, unitOfWork, userRepository, userQueryService);
-
             var result = await function.Handle(proxy, new TestLambdaContext());
 
-            Assert.True(result.StatusCode == (int) HttpStatusCode.Created);*/
+            // Assert
+            result.StatusCode.Should().Be((int) HttpStatusCode.Created);
         }
     }
 }

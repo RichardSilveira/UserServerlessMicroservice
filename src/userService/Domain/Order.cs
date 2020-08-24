@@ -11,5 +11,11 @@ namespace UserService.Domain
         public OrderStatus Status { get; private set; }
 
         public Guid UserId { get; private set; }
+
+        public Order(Guid userId, OrderStatus status)
+        {
+            this.UserId = userId;
+            this.Status = status;
+        }
     }
 }
