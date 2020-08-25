@@ -30,22 +30,7 @@ namespace UserServiceTests
             var userRepository = new UserRepository(context);
             var userQueryService = new UserQueryService(context);
 
-            var addUserRequest = new AddUserRequest()
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                Email = "newvalidemail@email.com",
-                Address = new AddressRequest()
-                {
-                    Country = "Argentina",
-                    Street = "Buenos Aires"
-                }
-            };
-
-            var proxy = new APIGatewayHttpApiV2ProxyRequest()
-            {
-                Body = JsonSerializer.Serialize(addUserRequest)
-            };
+            var proxy = new APIGatewayHttpApiV2ProxyRequest() {Body = JsonSerializer.Serialize(AddUserRequest.Factory.ValidUserSample())};
 
             // Act
             var function = new AddNewUserFunction(configuration, unitOfWork, userRepository, userQueryService);

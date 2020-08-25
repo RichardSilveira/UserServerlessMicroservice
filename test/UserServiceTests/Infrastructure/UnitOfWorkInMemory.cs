@@ -11,7 +11,7 @@ namespace UserServiceTests.Infrastructure
 
         public Task SaveChangesAsync()
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public void Dispose()
