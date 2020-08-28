@@ -37,7 +37,8 @@ namespace UserService.Functions
         {
             var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
+            //serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
+            serviceCollection.AddDbContext<UserContext>(options => options.UseInMemoryDatabase(connString)); //temporarily
 
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
@@ -99,11 +100,11 @@ namespace UserService.Functions
                 var userAddress = new Address(userAddressReq.Country, userAddressReq.Street, userAddressReq.City,
                     userAddressReq.State);
 
-                user.UpdateAddress(userAddress); //todo: UpdateAddress may raise an event (I may need to have an AddAdress as well)
+                user.AddAddress(userAddress);
             }
 
             _userRepository.Add(user);
-            await _unitOfWork.SaveChangesAsync(); // Sometimes is better not to wait for the Completion of your event handlers because of the Lambda "nature". 
+            await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Dispose(); // Sounds good dispose explicitly because of the Lambda "nature".
 
 

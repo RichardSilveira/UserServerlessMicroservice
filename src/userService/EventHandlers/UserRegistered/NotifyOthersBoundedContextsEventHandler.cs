@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using UserService.Domain.Events;
@@ -10,7 +11,7 @@ namespace UserService.EventHandlers.UserRegistered
         public Task Handle(UserRegisteredDomainEvent notification, CancellationToken cancellationToken)
         {
             //todo: Notify via AWS SQS (maybe SNS + SQS through fanout strategy)
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }

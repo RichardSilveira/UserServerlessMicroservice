@@ -24,7 +24,8 @@ namespace UserService.Functions
         {
             var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
+            // serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
+            serviceCollection.AddDbContext<UserContext>(options => options.UseInMemoryDatabase(connString));//temporarily
 
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
         }

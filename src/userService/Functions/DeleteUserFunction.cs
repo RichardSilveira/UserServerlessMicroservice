@@ -25,8 +25,9 @@ namespace UserService.Functions
         {
             var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
-
+            // serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
+            serviceCollection.AddDbContext<UserContext>(options => options.UseInMemoryDatabase(connString));//temporarily
+            
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
         }
@@ -68,7 +69,7 @@ namespace UserService.Functions
             if (user == null) return NotFound();
 
             _userRepository.Delete(user);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Dispose();
 
             return NoContent();

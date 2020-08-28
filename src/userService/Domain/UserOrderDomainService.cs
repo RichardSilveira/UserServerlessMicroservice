@@ -25,7 +25,7 @@ namespace UserService.Domain
             return (true, "");
         }
 
-        public void UpdateAddressFromExistingUser(User user, Address newAddress)
+        public void UpdateAddressOfExistingUser(User user, Address newAddress)
         {
             if (newAddress != null)
                 user.UpdateAddress(newAddress);

@@ -19,8 +19,17 @@ namespace UserService.Domain
             AddDomainEvent(new UserRegisteredDomainEvent(Id, FirstName, LastName, Email));
         }
 
+        public void AddAddress(Address address) => Address = address;
 
-        public void UpdateAddress(Address address) => Address = address;
+
+        public void UpdateAddress(Address address)
+        {
+            Address = address;
+
+            AddDomainEvent(new UserAddressUpdatedDomainEvent(Id, $"{FirstName} {LastName}", Email,
+                Address.Country, Address.State, Address.City, Address.Street));
+        }
+
         public void RemoveAddress() => Address = null;
 
         public void UpdatePersonalInfo(string firstName, string lastName)

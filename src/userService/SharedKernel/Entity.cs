@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 using MediatR;
 
 namespace UserService.SharedKernel
@@ -10,7 +11,7 @@ namespace UserService.SharedKernel
         public Guid Id { get; private set; }
 
         private readonly List<INotification> _domainEvents;
-        public ReadOnlyCollection<INotification> DomainEvents => _domainEvents.AsReadOnly();
+        [JsonIgnore] public ReadOnlyCollection<INotification> DomainEvents => _domainEvents.AsReadOnly();
 
         protected Entity()
         {

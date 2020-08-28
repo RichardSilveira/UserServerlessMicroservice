@@ -30,8 +30,9 @@ namespace UserService.Functions
         {
             var connString = Configuration["UserServiceDbContextConnectionString"];
 
-            serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
-
+            // serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
+            serviceCollection.AddDbContext<UserContext>(options => options.UseInMemoryDatabase(connString));//temporarily
+            
             serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<IUserQueryService, UserQueryService>();
@@ -99,10 +100,10 @@ namespace UserService.Functions
             if (!result.IsValid)
                 return BadRequest(result.ReasonPhrase);
 
-            _userOrderService.UpdateAddressFromExistingUser(user, userAddress);
+            _userOrderService.UpdateAddressOfExistingUser(user, userAddress);
 
             _userRepository.Update(user);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Dispose();
 
             return Ok(user);
