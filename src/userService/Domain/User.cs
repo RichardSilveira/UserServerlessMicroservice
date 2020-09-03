@@ -19,7 +19,15 @@ namespace UserService.Domain
             AddDomainEvent(new UserRegisteredDomainEvent(Id, FirstName, LastName, Email));
         }
 
-        public void AddAddress(Address address) => Address = address;
+        public void AddAddress(Address address)
+        {
+            Address = address;
+
+            // Because I'm working with Event Sourcing, there is no need to raise an event of all of your aggregates methods 
+            // if you're not planning to work with Event Sourcing, raise events of the main ones, e.g. that will cause some effect in our application.
+            AddDomainEvent(new UserAddressAddedDomainEvent(Id, $"{FirstName} {LastName}", Email,
+                Address.Country, Address.State, Address.City, Address.Street));
+        }
 
 
         public void UpdateAddress(Address address)
@@ -30,13 +38,15 @@ namespace UserService.Domain
                 Address.Country, Address.State, Address.City, Address.Street));
         }
 
-        public void RemoveAddress() => Address = null;
+        public void RemoveAddress() => Address = null;//todo: Raise event
 
         public void UpdatePersonalInfo(string firstName, string lastName)
         {
             FirstName = firstName;
             LastName = lastName;
             // We don't allow email update at this sample
+            
+            //todo: Raise event
         }
     }
 }
