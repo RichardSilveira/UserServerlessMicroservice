@@ -29,7 +29,6 @@ namespace UserServiceTests
 {
     public class AddNewUserFunctionTest
     {
-        [Fact]
         public async Task AddNewValidUser_Should_Returns_201Created()
         {
             // Arrange

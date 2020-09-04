@@ -22,22 +22,23 @@ service: userservice
 
 provider:
   name: aws
+  profile: default
   runtime: dotnetcore3.1
   stage: dev
   region: us-east-1
   memorySize: 512
   timeout: 30
-  apiKeys:
-    - companyUsagePlan:
-        - company-shared-key # this key can be used for a Custom Authorizer
-  usagePlan:
-    - companyUsagePlan:
-        throttle:
-          burstLimit: 100
-          rateLimit: 200
-        quota:
-          limit: 200_000
-          period: MONTH
+#  apiKeys:
+#    - companyUsagePlan:
+#        - company-shared-key # this key can be used for a Custom Authorizer
+#  usagePlan:
+#    - companyUsagePlan:
+#        throttle:
+#          burstLimit: 100
+#          rateLimit: 200
+#        quota:
+#          limit: 200_000
+#          period: MONTH
   environment:
     STAGE: dev
 # you can overwrite defaults here
@@ -75,6 +76,7 @@ functions:
       - http:
           path: v1/users/
           method: post
+          cors: true
 
   updateUser:
     handler: UserService::UserService.Functions.UpdateUserFunction::Handle
@@ -83,6 +85,7 @@ functions:
       - http:
           path: v1/users/{userid}
           method: put
+          cors: true
 
   deleteUser:
     handler: UserService::UserService.Functions.DeleteUserFunction::Handle
@@ -91,6 +94,7 @@ functions:
       - http:
           path: v1/users/{userid}
           method: delete
+          cors: true
 
   getUserById:
     handler: UserService::UserService.Functions.GetUserByIdFunction::Handle
@@ -99,3 +103,38 @@ functions:
       - http:
           path: v1/users/{userid}
           method: get
+          cors: true
+          
+esources:
+ Resources:
+    # This response is needed for custom authorizer failures cors support ¯\_(ツ)_/¯
+    GatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: EXPIRED_TOKEN
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+    AuthFailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: UNAUTHORIZED
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+    FailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '500'

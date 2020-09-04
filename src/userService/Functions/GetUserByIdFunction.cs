@@ -25,7 +25,7 @@ namespace UserService.Functions
             var connString = Configuration["UserServiceDbContextConnectionString"];
 
             // serviceCollection.AddDbContext<UserContext>(options => options.UseMySql(connString));
-            serviceCollection.AddDbContext<UserContext>(options => options.UseInMemoryDatabase(connString));//temporarily
+            serviceCollection.AddDbContext<UserContext>(options => options.UseInMemoryDatabase(connString)); //temporarily
 
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
         }
@@ -48,9 +48,52 @@ namespace UserService.Functions
             _userRepository = userRepository;
         }
 
+        public APIGatewayProxyResponse HandleV2(APIGatewayProxyRequest request, ILambdaContext context)
+        {
+            LambdaLogger.Log("Alternative version using APIGatewayProxyResponse class instead");
+            var user = new User("Richard", "Lee", "richardleecba@gmail.com");
+
+            var response = new APIGatewayProxyResponse()
+            {
+                StatusCode = (int) HttpStatusCode.OK,
+                Body = Serialize(user),
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
+                }
+            };
+
+            return response;
+        }
+        
+
+        public APIGatewayHttpApiV2ProxyResponse HandleV7(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
+        {
+            LambdaLogger.Log("Original version 7 using APIGatewayHttpApiV2ProxyResponse class");
+            var user = new User("Richard", "Lee", "richardleecba@gmail.com");
+
+            return Ok(user);
+            
+            var  headers = new Dictionary<string, string>();
+            headers.Add("Content-Type", "application/json");
+            headers.Add("Access-Control-Allow-Origin", "*");
+            headers.Add("Access-Control-Allow-Credentials", "true");
+            
+            var response = new APIGatewayHttpApiV2ProxyResponse()
+            {
+                StatusCode = (int) HttpStatusCode.OK,
+                Body = Serialize(user),
+                Headers = headers
+            };
+
+            return response;
+        }
 
         public async Task<APIGatewayHttpApiV2ProxyResponse> Handle(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context)
         {
+            LambdaLogger.Log("XXX using APIGatewayHttpApiV2ProxyResponse class");
             LogFunctionMetadata(request, context);
 
             if (!RunningAsLocal) ConfigureDependencies();

@@ -16,7 +16,7 @@ namespace UserService.Domain
             LastName = lastName;
             Email = email;
 
-            AddDomainEvent(new UserRegisteredDomainEvent(Id, FirstName, LastName, Email));
+            // AddDomainEvent(new UserRegisteredDomainEvent(Id, FirstName, LastName, Email));
         }
 
         public void AddAddress(Address address)

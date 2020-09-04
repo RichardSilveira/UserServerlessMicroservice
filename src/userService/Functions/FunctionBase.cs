@@ -45,7 +45,9 @@ namespace UserService.Functions
                 StatusCode = (int) HttpStatusCode.OK,
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -56,7 +58,23 @@ namespace UserService.Functions
                 Body = Serialize(body),
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
+                }
+            };
+
+
+        protected APIGatewayProxyResponse Ok2(object body) =>
+            new APIGatewayProxyResponse()
+            {
+                StatusCode = (int) HttpStatusCode.OK,
+                Body = Serialize(body),
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -67,7 +85,9 @@ namespace UserService.Functions
                 Body = body,
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -76,7 +96,13 @@ namespace UserService.Functions
             var response = new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.OK,
-                Body = Serialize(body)
+                Body = Serialize(body),
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
+                }
             };
 
             options(response);
@@ -91,9 +117,9 @@ namespace UserService.Functions
                 Body = Serialize(body),
                 Headers = new Dictionary<string, string>
                 {
-                    {
-                        "Content-Type", "application/json"
-                    }
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -105,9 +131,9 @@ namespace UserService.Functions
                 Body = body,
                 Headers = new Dictionary<string, string>
                 {
-                    {
-                        "Content-Type", "application/json"
-                    }
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -116,7 +142,13 @@ namespace UserService.Functions
             var response = new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.Created,
-                Body = Serialize(body)
+                Body = Serialize(body),
+                Headers = new Dictionary<string, string>
+                {
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
+                }
             };
 
             options(response);
@@ -130,7 +162,9 @@ namespace UserService.Functions
                 StatusCode = (int) HttpStatusCode.NoContent,
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -140,7 +174,9 @@ namespace UserService.Functions
                 StatusCode = (int) HttpStatusCode.NotFound,
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -151,7 +187,9 @@ namespace UserService.Functions
                 Body = errorMessage,
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
 
@@ -162,10 +200,12 @@ namespace UserService.Functions
                 Body = Serialize(errors),
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
-        
+
         protected APIGatewayHttpApiV2ProxyResponse BadRequest(ModelFailure error) =>
             new APIGatewayHttpApiV2ProxyResponse()
             {
@@ -173,8 +213,11 @@ namespace UserService.Functions
                 Body = Serialize(error),
                 Headers = new Dictionary<string, string>
                 {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
                 }
             };
     }
 }
+// Note: There is an issue when we try assign a header object to Headers property. -  https://github.com/aws/aws-sdk-net/issues/1695
