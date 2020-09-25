@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Microsoft.Extensions.Configuration;
@@ -12,8 +13,13 @@ namespace UserService.Functions
 {
     public abstract class FunctionBase
     {
-        protected IConfiguration Configuration { get; private set; }
-        protected bool RunningAsLocal = false;
+        protected IConfiguration Configuration { get; }
+        protected bool RunningAsLocal { get; }
+
+        protected JsonSerializerOptions SerializerOptions { get; set; } = new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         public FunctionBase() => Configuration = ConfigurationService.Instance.Configuration;
 
@@ -39,37 +45,11 @@ namespace UserService.Functions
             LambdaLogger.Log($"EVENT: {Serialize(request.GetMainProperties())}");
         }
 
-        protected APIGatewayHttpApiV2ProxyResponse Ok() =>
-            new APIGatewayHttpApiV2ProxyResponse()
-            {
-                StatusCode = (int) HttpStatusCode.OK,
-                Headers = new Dictionary<string, string>
-                {
-                    {"Content-Type", "application/json"},
-                    {"Access-Control-Allow-Origin", "*"},
-                    {"Access-Control-Allow-Credentials", "true"}
-                }
-            };
-
         protected APIGatewayHttpApiV2ProxyResponse Ok(object body) =>
             new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.OK,
-                Body = Serialize(body),
-                Headers = new Dictionary<string, string>
-                {
-                    {"Content-Type", "application/json"},
-                    {"Access-Control-Allow-Origin", "*"},
-                    {"Access-Control-Allow-Credentials", "true"}
-                }
-            };
-
-
-        protected APIGatewayProxyResponse Ok2(object body) =>
-            new APIGatewayProxyResponse()
-            {
-                StatusCode = (int) HttpStatusCode.OK,
-                Body = Serialize(body),
+                Body = Serialize(body, SerializerOptions),
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
@@ -96,7 +76,7 @@ namespace UserService.Functions
             var response = new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.OK,
-                Body = Serialize(body),
+                Body = Serialize(body, SerializerOptions),
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
@@ -114,7 +94,7 @@ namespace UserService.Functions
             new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.Created,
-                Body = Serialize(body),
+                Body = Serialize(body, SerializerOptions),
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
@@ -142,7 +122,7 @@ namespace UserService.Functions
             var response = new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.Created,
-                Body = Serialize(body),
+                Body = Serialize(body, SerializerOptions),
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
@@ -197,7 +177,7 @@ namespace UserService.Functions
             new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.BadRequest,
-                Body = Serialize(errors),
+                Body = Serialize(errors, SerializerOptions),
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
@@ -210,7 +190,7 @@ namespace UserService.Functions
             new APIGatewayHttpApiV2ProxyResponse()
             {
                 StatusCode = (int) HttpStatusCode.BadRequest,
-                Body = Serialize(error),
+                Body = Serialize(error, SerializerOptions),
                 Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "application/json"},
